@@ -1,19 +1,26 @@
 import multer from "multer";
-import path from "path";
-import fs from "fs";
 
-const uploadDir = path.resolve(process.cwd(), "backend/uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+const storage = multer.memoryStorage();
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const base = path.basename(file.originalname, ext).replace(/\s+/g, "-").toLowerCase();
-    cb(null, `${Date.now()}-${base}${ext}`);
+export const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  },
+  fileFilter: (_req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image uploads are supported"));
+    }
+    return cb(null, true);
   }
 });
 
-export const upload = multer({ storage });
+export function requireExternalStorage(req, _res, next) {
+  if (!req.files?.length) return next();
+
+  const error = new Error(
+    "File uploads require cloud storage. Configure Cloudinary or S3 and upload files from your client or an upload service."
+  );
+  error.statusCode = 501;
+  return next(error);
+}
