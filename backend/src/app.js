@@ -10,6 +10,8 @@ import themeRoutes from "./routes/theme.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import heroRoutes from "./routes/hero.routes.js";
 import { globalErrorHandler, notFoundHandler } from "./middleware/error.js";
+import { asyncHandler } from "./middleware/asyncHandler.js";
+import { ensureAppInitialized } from "./config/init.js";
 
 const app = express();
 
@@ -42,6 +44,13 @@ app.get("/", (_req, res) => {
 });
 
 app.use("/api/health", healthRoute);
+app.use(
+  "/api",
+  asyncHandler(async (req, _res, next) => {
+    await ensureAppInitialized();
+    next();
+  })
+);
 app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 app.use("/api/about", aboutRoutes);
