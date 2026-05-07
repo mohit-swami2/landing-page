@@ -1,19 +1,28 @@
 import express from "express";
 import cors from "cors";
-import healthRoute from "../src/routes/health.route.js";
-import authRoutes from "../src/routes/auth.routes.js";
-import projectRoutes from "../src/routes/project.routes.js";
-import aboutRoutes from "../src/routes/about.routes.js";
-import socialRoutes from "../src/routes/social.routes.js";
-import queryRoutes from "../src/routes/query.routes.js";
-import themeRoutes from "../src/routes/theme.routes.js";
-import analyticsRoutes from "../src/routes/analytics.routes.js";
-import heroRoutes from "../src/routes/hero.routes.js";
+import * as healthRouteModule from "../src/routes/health.route.js";
+import * as authRoutesModule from "../src/routes/auth.routes.js";
+import * as projectRoutesModule from "../src/routes/project.routes.js";
+import * as aboutRoutesModule from "../src/routes/about.routes.js";
+import * as socialRoutesModule from "../src/routes/social.routes.js";
+import * as queryRoutesModule from "../src/routes/query.routes.js";
+import * as themeRoutesModule from "../src/routes/theme.routes.js";
+import * as analyticsRoutesModule from "../src/routes/analytics.routes.js";
+import * as heroRoutesModule from "../src/routes/hero.routes.js";
 import { globalErrorHandler, notFoundHandler } from "../src/middleware/error.js";
 import { asyncHandler } from "../src/middleware/asyncHandler.js";
 import { ensureAppInitialized } from "../src/config/init.js";
 
 const app = express();
+const healthRoute = healthRouteModule.default || healthRouteModule.router;
+const authRoutes = authRoutesModule.default || authRoutesModule.router;
+const projectRoutes = projectRoutesModule.default || projectRoutesModule.router;
+const aboutRoutes = aboutRoutesModule.default || aboutRoutesModule.router;
+const socialRoutes = socialRoutesModule.default || socialRoutesModule.router;
+const queryRoutes = queryRoutesModule.default || queryRoutesModule.router;
+const themeRoutes = themeRoutesModule.default || themeRoutesModule.router;
+const analyticsRoutes = analyticsRoutesModule.default || analyticsRoutesModule.router;
+const heroRoutes = heroRoutesModule.default || heroRoutesModule.router;
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
