@@ -9,9 +9,9 @@ import * as queryRoutesModule from "../src/routes/query.routes.js";
 import * as themeRoutesModule from "../src/routes/theme.routes.js";
 import * as analyticsRoutesModule from "../src/routes/analytics.routes.js";
 import * as heroRoutesModule from "../src/routes/hero.routes.js";
-import { globalErrorHandler, notFoundHandler } from "../src/middleware/error.js";
-import { asyncHandler } from "../src/middleware/asyncHandler.js";
-import { ensureAppInitialized } from "../src/config/init.js";
+import * as errorMiddlewareModule from "../src/middleware/error.js";
+import * as asyncHandlerModule from "../src/middleware/asyncHandler.js";
+import * as initModule from "../src/config/init.js";
 
 const app = express();
 const healthRoute = healthRouteModule.default || healthRouteModule.router;
@@ -23,6 +23,10 @@ const queryRoutes = queryRoutesModule.default || queryRoutesModule.router;
 const themeRoutes = themeRoutesModule.default || themeRoutesModule.router;
 const analyticsRoutes = analyticsRoutesModule.default || analyticsRoutesModule.router;
 const heroRoutes = heroRoutesModule.default || heroRoutesModule.router;
+const notFoundHandler = errorMiddlewareModule.notFoundHandler || errorMiddlewareModule.default;
+const globalErrorHandler = errorMiddlewareModule.globalErrorHandler || errorMiddlewareModule.default;
+const asyncHandler = asyncHandlerModule.asyncHandler || asyncHandlerModule.default;
+const ensureAppInitialized = initModule.ensureAppInitialized || initModule.default;
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
