@@ -54,3 +54,26 @@ npm run build
 ## Backend Environment
 
 Copy `backend/.env.example` to `backend/.env` and adjust SMTP/JWT values.
+
+## Vercel (Two-Project Setup)
+
+Use two separate Vercel projects:
+
+- Frontend project root: `frontend/`
+- Backend project root: `backend/`
+
+Required environment variables:
+
+- Frontend (`frontend` project):
+  - `NEXT_PUBLIC_API_BASE=https://<your-backend-domain>/api`
+- Backend (`backend` project):
+  - `MONGODB_URI=...`
+  - `JWT_SECRET=...`
+  - `FRONTEND_URL=https://<your-frontend-domain>`
+  - `ADMIN_ALERT_EMAIL=...`
+  - `EMAIL_FROM=...`
+  - `SMTP_HOST=...`
+  - `SMTP_PORT=587`
+  - `SMTP_SECURE=false`
+  - `SMTP_USER=...`
+  - `SMTP_PASS=...`
