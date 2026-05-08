@@ -3,8 +3,22 @@ import { PortfolioPage } from "@/features/portfolio/PortfolioPage";
 const VALID_THEMES = new Set(["purpleCyan", "emeraldTeal", "sunsetOrange", "blueIndigo", "rosePink"] as const);
 type ThemeKey = "purpleCyan" | "emeraldTeal" | "sunsetOrange" | "blueIndigo" | "rosePink";
 
+function resolveServerApiBase() {
+  const fromEnv = process.env.NEXT_PUBLIC_API_BASE?.trim();
+  if (!fromEnv) {
+    throw new Error("NEXT_PUBLIC_API_BASE is required. Set it in frontend environment variables.");
+  }
+
+  const normalized = fromEnv.replace(/\/+$/, "");
+  if (!normalized.endsWith("/api")) {
+    throw new Error("NEXT_PUBLIC_API_BASE must include '/api'. Example: https://your-backend.vercel.app/api");
+  }
+
+  return normalized;
+}
+
 async function getInitialThemeKey(): Promise<ThemeKey> {
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
+  const apiBase = resolveServerApiBase();
   try {
     const res = await fetch(`${apiBase}/theme/public`, { cache: "no-store" });
     if (!res.ok) return "purpleCyan";
