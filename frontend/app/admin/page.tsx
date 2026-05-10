@@ -155,7 +155,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">Admin Login</h1>
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button style={{ cursor: 'pointer' }} disabled={busy} className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60" style={{ cursor: 'pointer' }}>
+          <button style={{ cursor: 'pointer' }} disabled={busy} className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60">
             {busy ? "Please wait..." : "Login"}
           </button>
           {notice ? <p className={`text-sm ${notice.type === "error" ? "text-red-300" : "text-emerald-300"}`}>{notice.text}</p> : null}
