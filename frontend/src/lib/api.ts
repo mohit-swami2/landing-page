@@ -1,4 +1,18 @@
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:5000/api";
+function resolveApiBase() {
+  const fromEnv = process.env.NEXT_PUBLIC_API_BASE?.trim();
+  if (!fromEnv) {
+    throw new Error("NEXT_PUBLIC_API_BASE is required. Set it in frontend environment variables.");
+  }
+
+  const normalized = fromEnv.replace(/\/+$/, "");
+  if (!normalized.endsWith("/api")) {
+    throw new Error("NEXT_PUBLIC_API_BASE must include '/api'. Example: https://your-backend.vercel.app/api");
+  }
+
+  return normalized;
+}
+
+export const API_BASE = resolveApiBase();
 
 export async function apiFetch(path: string, options: RequestInit = {}, token?: string) {
   const headers: Record<string, string> = {
@@ -7,7 +21,8 @@ export async function apiFetch(path: string, options: RequestInit = {}, token?: 
   };
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_BASE}${path}`, {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const res = await fetch(`${API_BASE}${normalizedPath}`, {
     ...options,
     headers
   });

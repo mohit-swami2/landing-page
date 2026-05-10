@@ -1,23 +1,25 @@
 import dotenv from "dotenv";
 import app from "./app.js";
-import { connectDatabase } from "./config/db.js";
-import { seedDefaults } from "./seed/seedDefaults.js";
+import { ensureAppInitialized } from "./config/init.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT || 8081;
 
-async function startServer() {
+async function startLocalServer() {
   try {
-    await connectDatabase();
-    await seedDefaults();
+    await ensureAppInitialized();
     app.listen(PORT, () => {
-      console.log(`Backend running on http://localhost:${PORT}`);
+      console.log(`[server] backend running on http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start backend:", error);
+    console.error("[server] failed to start backend", error);
     process.exit(1);
   }
 }
 
-startServer();
+if (process.env.VERCEL !== "1") {
+  startLocalServer();
+}
+
+export default app;
