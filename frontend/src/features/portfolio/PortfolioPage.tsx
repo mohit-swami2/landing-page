@@ -518,8 +518,8 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
               <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
-                <div style={{ cursor: 'pointer' }} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
-                  <div className="absolute inset-0 animate-[spin_8s_linear_infinite]" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.2), rgba(${theme.secondary}, 0.2), rgba(${theme.accent}, 0.2))` }} />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                  <div className="absolute inset-0 animate-[spin_8s_linear_infinite]" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.2), rgba(${theme.secondary}, 0.2), rgba(${theme.accent}, 0.2))`, cursor: 'pointer' }} />
                 </div>
                 <div style={{ cursor: 'pointer' }} className="relative z-10">
                   <div className="h-48 overflow-hidden flex gap-0.5 bg-slate-700/30">
