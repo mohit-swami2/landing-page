@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { apiFetch, API_BASE } from "@/lib/api";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { Line } from "react-chartjs-2";
 
@@ -53,7 +53,8 @@ export default function AdminPage() {
     shortDescription: "",
     detailedDescription: "",
     liveLink: "",
-    techStack: ""
+    techStack: "",
+    imageFiles: [] as File[]
   });
   const [socialForm, setSocialForm] = useState({
     platformName: "",
@@ -110,7 +111,7 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    const saved = localStorage.getItem("admin-token");
+    const saved = sessionStorage.getItem("admin-token");
     if (saved) setToken(saved);
   }, []);
 
@@ -145,7 +146,7 @@ export default function AdminPage() {
                 method: "POST",
                 body: JSON.stringify({ email, password })
               });
-              localStorage.setItem("admin-token", data.token);
+              sessionStorage.setItem("admin-token", data.token);
               setToken(data.token);
             }, "Login successful");
           }}
@@ -154,7 +155,7 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">Admin Login</h1>
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button disabled={busy} className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60">
+          <button style={{ cursor: 'pointer' }} disabled={busy} className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60" style={{ cursor: 'pointer' }}>
             {busy ? "Please wait..." : "Login"}
           </button>
           {notice ? <p className={`text-sm ${notice.type === "error" ? "text-red-300" : "text-emerald-300"}`}>{notice.text}</p> : null}
@@ -177,7 +178,7 @@ export default function AdminPage() {
           </div>
           <button
             onClick={() => {
-              localStorage.removeItem("admin-token");
+              sessionStorage.removeItem("admin-token");
               setToken("");
             }}
             className="mt-4 w-full px-3 py-2 rounded bg-slate-800 border border-slate-600"
@@ -195,19 +196,17 @@ export default function AdminPage() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   runAction(async () => {
-                    await apiFetch(
-                      "/projects",
-                      {
-                        method: "POST",
-                        body: JSON.stringify({
-                          ...projectForm,
-                          techStack: projectForm.techStack.split(",").map((v) => v.trim()).filter(Boolean),
-                          existingImages: []
-                        })
-                      },
-                      token
-                    );
-                    setProjectForm({ name: "", slug: "", shortDescription: "", detailedDescription: "", liveLink: "", techStack: "" });
+                    const fd = new FormData();
+                    fd.append("name", projectForm.name);
+                    fd.append("slug", projectForm.slug);
+                    fd.append("shortDescription", projectForm.shortDescription);
+                    fd.append("detailedDescription", projectForm.detailedDescription);
+                    fd.append("liveLink", projectForm.liveLink);
+                    projectForm.techStack.split(",").map((v) => v.trim()).filter(Boolean).forEach(t => fd.append("techStack", t));
+                    projectForm.imageFiles.forEach(f => fd.append("images", f));
+
+                    await apiFetch("/projects", { method: "POST", body: fd }, token);
+                    setProjectForm({ name: "", slug: "", shortDescription: "", detailedDescription: "", liveLink: "", techStack: "", imageFiles: [] });
                     await loadAll(token);
                   }, "Project saved");
                 }}
@@ -220,13 +219,19 @@ export default function AdminPage() {
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="Live Link" value={projectForm.liveLink} onChange={(e) => setProjectForm({ ...projectForm, liveLink: e.target.value })} />
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="Tech Stack (comma separated)" value={projectForm.techStack} onChange={(e) => setProjectForm({ ...projectForm, techStack: e.target.value })} />
                 <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={6} placeholder="Detailed Description (HTML supported)" value={projectForm.detailedDescription} onChange={(e) => setProjectForm({ ...projectForm, detailedDescription: e.target.value })} />
+                <input type="file" multiple accept="image/*" onChange={(e) => setProjectForm({ ...projectForm, imageFiles: Array.from(e.target.files || []) })} className="w-full p-2 rounded bg-slate-800 border border-slate-700 text-slate-300" />
                 <button disabled={busy} className="px-4 py-2 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60">{busy ? "Saving..." : "Save Project"}</button>
               </form>
               <div className="grid md:grid-cols-2 gap-4">
                 {projects.map((p) => (
-                  <div key={p._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700">
-                    <p className="font-semibold">{p.name}</p>
-                    <p className="text-sm text-slate-300">{p.shortDescription}</p>
+                  <div key={p._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 flex gap-4 items-start">
+                    {p.images && p.images.length > 0 && (
+                      <img src={`${API_BASE.replace(/\/api$/, "")}${p.images[0]}`} alt={p.name} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+                    )}
+                    <div>
+                      <p className="font-semibold">{p.name}</p>
+                      <p className="text-sm text-slate-300">{p.shortDescription}</p>
+                    </div>
                   </div>
                 ))}
                 {projects.length === 0 ? <p className="text-sm text-slate-400">No projects found yet.</p> : null}

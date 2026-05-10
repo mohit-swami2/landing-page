@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Send,
   Twitter,
-  Sparkles
+  Sparkles,
+  Phone
 } from "lucide-react";
 import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { API_BASE } from "@/lib/api";
@@ -151,7 +152,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
             description: project.description || project.detailedDescription || "",
             briefDescription: project.briefDescription || project.shortDescription || "",
             tech: Array.isArray(project.tech) ? project.tech : Array.isArray(project.techStack) ? project.techStack : [],
-            images: Array.isArray(project.images) && project.images.length ? project.images : [
+            images: Array.isArray(project.images) && project.images.length ? project.images.map((img: string) => img.startsWith('/') ? `${API_BASE.replace(/\/api$/, '')}${img}` : img) : [
               "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"
             ]
           }));
@@ -226,7 +227,8 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     github: Github,
     linkedin: Linkedin,
     mail: Mail,
-    twitter: Twitter
+    twitter: Twitter,
+    phone: Phone
   };
 
   const skills = [
@@ -242,37 +244,14 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
 
   const initialProjects = [
     {
-      title: "E-Commerce Platform",
+      title: "Birlingo",
       description:
-        "A comprehensive full-stack e-commerce solution featuring advanced subscription management with seamless payment gateway integration. Built to handle complex billing cycles, automated renewals, and multi-currency support. The platform includes robust error handling, transaction logging, and PCI-compliant payment processing.",
-      briefDescription: "Full-stack subscription system with Stripe & Paytm integration",
-      tech: ["Node.js", "React", "MongoDB", "Stripe"],
+        "Birlingo is a full-stack EdTech platform designed to bridge the language gap for children through interactive, parent-guided learning journeys. The platform seamlessly integrates comprehensive course modules, real-time progress tracking, and secure payment gateway integration (Stripe & Paytm) to deliver an engaging educational experience.",
+      briefDescription: "EdTech platform for children's language learning with interactive modules and parent-guided journeys. My Role: Full stack developer with backend expertise. I designed and implemented the scalable cloud architecture on AWS and managed the end-to-end DevOps pipeline, ensuring high availability and seamless deployment of the platform. ",
+      tech: ["Node.js", "Angular", "MongoDB", "Stripe", "AWS", "nginx", "Cloudflare"],
       images: [
-        "https://images.unsplash.com/photo-1557821552-17105176677c?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1200&h=800&fit=crop"
-      ]
-    },
-    {
-      title: "Real-time Analytics Dashboard",
-      description:
-        "Enterprise-grade analytics platform designed for high-traffic applications. Implements efficient data aggregation, real-time WebSocket connections, and optimized database queries to maintain sub-second response times even under heavy load. Features include custom metric tracking, data visualization, and automated reporting systems.",
-      briefDescription: "High-performance dashboard handling 100k+ concurrent users",
-      tech: ["React", "Express", "AWS", "Docker"],
-      images: [
-        "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800&fit=crop"
-      ]
-    },
-    {
-      title: "Error Monitoring Package",
-      description:
-        "Open-source NPM package providing centralized error tracking and monitoring capabilities for Node.js applications. Features automatic error categorization, stack trace analysis, notification integrations, and detailed error reporting. Designed with minimal performance overhead and easy integration into existing projects.",
-      briefDescription: "NPM package for centralized error tracking and monitoring",
-      tech: ["Node.js", "TypeScript", "NPM"],
-      images: [
-        "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=1200&h=800&fit=crop",
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&h=800&fit=crop"
+        "/uploads/Birlingo-home-screen.png",
+        "/uploads/Birlingo-lesson-family.png",
       ]
     }
   ];
@@ -394,16 +373,16 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
                   const key = (social.icon || social.platformName || "").toLowerCase();
                   const Icon = socialIconByName[key] || socialIconByName[(social.platformName || "").toLowerCase()] || ExternalLink;
                   return (
-                  <a
-                    key={i}
-                    href={social.url || "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.platformName || "social link"}
-                    className="grid h-10 w-10 place-items-center rounded-full border border-slate-700 bg-slate-900/60 text-slate-400 backdrop-blur transition-colors hover:text-slate-100"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </a>
+                    <a
+                      key={i}
+                      href={social.url || "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.platformName || "social link"}
+                      className="grid h-10 w-10 place-items-center rounded-full border border-slate-700 bg-slate-900/60 text-slate-400 backdrop-blur transition-colors hover:text-slate-100"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </a>
                   );
                 })}
               </div>
@@ -446,7 +425,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
                     <span className="ml-3 text-xs text-slate-400">developer.ts</span>
                   </div>
                   <pre className="leading-relaxed text-slate-300 overflow-x-auto">
-{`const `}<span style={{ color: `rgb(${theme.secondary})` }}>mohit</span>{` = {
+                    {`const `}<span style={{ color: `rgb(${theme.secondary})` }}>mohit</span>{` = {
   role: `}<span style={{ color: `rgb(${theme.primary})` }}>'Full Stack Dev'</span>{`,
   stack: [`}<span style={{ color: `rgb(${theme.accent})` }}>'Node'</span>{`, `}<span style={{ color: `rgb(${theme.accent})` }}>'React'</span>{`, `}<span style={{ color: `rgb(${theme.accent})` }}>'Mongo'</span>{`],
   focus: `}<span style={{ color: `rgb(${theme.primary})` }}>'scale & DX'</span>{`,
@@ -538,13 +517,21 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <motion.div key={project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+              <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
+                <div style={{ cursor: 'pointer' }} className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                   <div className="absolute inset-0 animate-[spin_8s_linear_infinite]" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.2), rgba(${theme.secondary}, 0.2), rgba(${theme.accent}, 0.2))` }} />
                 </div>
-                <div className="relative z-10">
-                  <div className="h-48 overflow-hidden">
-                    <img src={project.images[0]} alt={project.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                <div style={{ cursor: 'pointer' }} className="relative z-10">
+                  <div className="h-48 overflow-hidden flex gap-0.5 bg-slate-700/30">
+                    {project.images && project.images.length > 0 ? (
+                      <div className="flex-1 h-full overflow-hidden relative">
+                        <img src={project.images[0]} alt={`${project.title}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                    ) : (
+                      <div className="flex-1 h-full overflow-hidden relative">
+                        <img src="/uploads/Birlingo-home-screen.png" alt={`${project.title}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      </div>
+                    )}
                   </div>
                   <div className="p-6">
                     <h3 className="text-xl font-bold text-slate-200 mb-2">{project.title}</h3>
@@ -557,7 +544,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
                       ))}
                     </div>
                     <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }} onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} className="flex items-center gap-2 transition-colors" style={{ color: `rgb(${theme.secondary})` }}>
-                      <span>View Project</span>
+                      <span style={{ cursor: 'pointer' }}>View Project</span>
                       <ExternalLink size={16} />
                     </motion.button>
                   </div>
@@ -617,23 +604,33 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
                 <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50 shadow-xl">
                   <h3 className="text-xl font-bold text-slate-200 mb-6">Connect With Me</h3>
                   <div className="space-y-4">
-                    {[
-                      { Icon: Mail, label: "Email", value: "mohit@example.com", link: "mailto:mohit@example.com" },
-                      { Icon: Github, label: "GitHub", value: "@mohitswami", link: "https://github.com" },
-                      { Icon: Linkedin, label: "LinkedIn", value: "Mohit Swami", link: "https://linkedin.com" },
-                      { Icon: Twitter, label: "Twitter", value: "@mohitswami", link: "https://twitter.com" }
-                    ].map((social, index) => (
-                      <motion.a key={social.label} href={social.link} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1, ease: "easeOut" }} whileHover={{ x: 5 }} className="flex items-center gap-4 p-4 rounded-xl border border-slate-700/50 hover:border-opacity-100 transition-all group" style={{ borderColor: `rgba(${theme.primary}, 0.3)` }}>
-                        <div className="p-3 rounded-lg" style={{ background: `rgba(${theme.primary}, 0.1)` }}>
-                          <social.Icon className="transition-colors" style={{ color: `rgb(${theme.primary})` }} size={24} />
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-slate-400 text-sm">{social.label}</p>
-                          <p className="text-slate-200 font-medium">{social.value}</p>
-                        </div>
-                        <ExternalLink className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: `rgb(${theme.secondary})` }} size={18} />
-                      </motion.a>
-                    ))}
+                    {(socialLinks.length ? socialLinks : [
+                      { platformName: "Email", icon: "mail", url: "mailto:[EMAIL_ADDRESS]" },
+                      { platformName: "GitHub", icon: "github", url: "https://github.com/mohitswami" },
+                      { platformName: "LinkedIn", icon: "linkedin", url: "https://linkedin.com/in/mohitswami17" },
+                      { platformName: "Phone", icon: "phone", url: "tel:+919910357662" }
+                    ]).map((social, index) => {
+                      const key = (social.icon || social.platformName || "").toLowerCase();
+                      const Icon = socialIconByName[key] || socialIconByName[(social.platformName || "").toLowerCase()] || ExternalLink;
+                      const displayValue = key === 'linkedin' || social.platformName?.toLowerCase() === 'linkedin'
+                        ? "Mohit Swami"
+                        : (social.url ? social.url.replace(/^https?:\/\/(www\.)?/, '').replace(/^mailto:/, '').replace(/^tel:/, '').replace(/\/$/, '') : "");
+
+                      return (
+                        <motion.a key={social.platformName || index} href={social.url || "#"} target="_blank" rel="noopener noreferrer" initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1, ease: "easeOut" }} whileHover={{ x: 5 }} className="flex items-center gap-4 p-4 rounded-xl border border-slate-700/50 hover:border-opacity-100 transition-all group" style={{ borderColor: `rgba(${theme.primary}, 0.3)` }}>
+                          <div className="p-3 rounded-lg" style={{ background: `rgba(${theme.primary}, 0.1)` }}>
+                            <Icon className="transition-colors" style={{ color: `rgb(${theme.primary})` }} size={24} />
+                          </div>
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-slate-400 text-sm">{social.platformName}</p>
+                            <p className="text-slate-200 font-medium truncate">
+                              {displayValue}
+                            </p>
+                          </div>
+                          <ExternalLink className="opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" style={{ color: `rgb(${theme.secondary})` }} size={18} />
+                        </motion.a>
+                      )
+                    })}
                   </div>
                 </div>
 

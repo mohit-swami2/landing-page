@@ -8,6 +8,13 @@ import { projectSchema } from "../validators/contentValidators.js";
 
 const router = Router();
 
+function parseFormDataArrays(req, res, next) {
+  if (req.body.techStack && typeof req.body.techStack === "string") {
+    req.body.techStack = [req.body.techStack];
+  }
+  next();
+}
+
 router.get("/public", asyncHandler(listPublicProjects));
 router.get("/", requireAuth, asyncHandler(listProjects));
 router.get("/:id", requireAuth, asyncHandler(getProject));

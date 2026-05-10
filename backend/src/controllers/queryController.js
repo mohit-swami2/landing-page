@@ -14,7 +14,7 @@ export async function submitQuery(req, res) {
   });
 
   await sendTemplatedEmail({
-    to: process.env.ADMIN_ALERT_EMAIL || "mohit@mailinator.com",
+    to: process.env.ADMIN_ALERT_EMAIL || "mohitswami244@gmail.com",
     key: "new-query-alert",
     data: {
       name: item.name,
