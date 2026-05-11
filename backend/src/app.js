@@ -12,8 +12,10 @@ import heroRoutes from "./routes/hero.routes.js";
 import { globalErrorHandler, notFoundHandler } from "./middleware/error.js";
 import { asyncHandler } from "./middleware/asyncHandler.js";
 import { ensureAppInitialized } from "./config/init.js";
+import morgan from "morgan";
 
 const app = express();
+app.use(morgan("dev"));
 
 app.disable("x-powered-by");
 app.set("trust proxy", 1);
@@ -25,7 +27,7 @@ app.use(
         .split(",")
         .map((item) => item.trim())
         .filter(Boolean);
-
+      console.log("origin", origin, allowedOrigins);
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
