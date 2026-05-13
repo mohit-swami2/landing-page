@@ -5,7 +5,17 @@ const themeSettingSchema = new mongoose.Schema(
     key: { type: String, default: "default", unique: true },
     themeKey: {
       type: String,
-      enum: ["purpleCyan", "emeraldTeal", "sunsetOrange", "blueIndigo", "rosePink"],
+      enum: [
+        "purpleCyan",
+        "emeraldTeal",
+        "sunsetOrange",
+        "blueIndigo",
+        "rosePink",
+        "amberGold",
+        "oceanSky",
+        "limeMint",
+        "violetMagenta"
+      ],
       default: "purpleCyan"
     }
   },

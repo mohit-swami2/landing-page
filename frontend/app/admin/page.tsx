@@ -16,7 +16,11 @@ const themePresets = [
   { key: "emeraldTeal", name: "Emerald Teal", preview: "linear-gradient(135deg,#059669,#0d9488)" },
   { key: "sunsetOrange", name: "Sunset Orange", preview: "linear-gradient(135deg,#ea580c,#dc2626)" },
   { key: "blueIndigo", name: "Blue Indigo", preview: "linear-gradient(135deg,#2563eb,#4f46e5)" },
-  { key: "rosePink", name: "Rose Pink", preview: "linear-gradient(135deg,#e11d48,#db2777)" }
+  { key: "rosePink", name: "Rose Pink", preview: "linear-gradient(135deg,#e11d48,#db2777)" },
+  { key: "amberGold", name: "Amber Gold", preview: "linear-gradient(135deg,#d97706,#f59e0b)" },
+  { key: "oceanSky", name: "Ocean Sky", preview: "linear-gradient(135deg,#0284c7,#38bdf8)" },
+  { key: "limeMint", name: "Lime Mint", preview: "linear-gradient(135deg,#65a30d,#10b981)" },
+  { key: "violetMagenta", name: "Violet Magenta", preview: "linear-gradient(135deg,#7c3aed,#d946ef)" }
 ] as const;
 
 export default function AdminPage() {

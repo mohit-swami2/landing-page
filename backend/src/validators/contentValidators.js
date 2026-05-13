@@ -37,7 +37,17 @@ export const queryStatusSchema = Joi.object({
 
 export const themeSchema = Joi.object({
   themeKey: Joi.string()
-    .valid("purpleCyan", "emeraldTeal", "sunsetOrange", "blueIndigo", "rosePink")
+    .valid(
+      "purpleCyan",
+      "emeraldTeal",
+      "sunsetOrange",
+      "blueIndigo",
+      "rosePink",
+      "amberGold",
+      "oceanSky",
+      "limeMint",
+      "violetMagenta"
+    )
     .required()
 });
 

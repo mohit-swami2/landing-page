@@ -28,7 +28,11 @@ const themes = {
   emeraldTeal: { name: "Emerald Teal", primary: "16, 185, 129", secondary: "20, 184, 166", accent: "52, 211, 153" },
   sunsetOrange: { name: "Sunset Orange", primary: "251, 146, 60", secondary: "239, 68, 68", accent: "253, 186, 116" },
   blueIndigo: { name: "Blue Indigo", primary: "59, 130, 246", secondary: "99, 102, 241", accent: "139, 92, 246" },
-  rosePink: { name: "Rose Pink", primary: "236, 72, 153", secondary: "244, 63, 94", accent: "249, 168, 212" }
+  rosePink: { name: "Rose Pink", primary: "236, 72, 153", secondary: "244, 63, 94", accent: "249, 168, 212" },
+  amberGold: { name: "Amber Gold", primary: "217, 119, 6", secondary: "245, 158, 11", accent: "252, 211, 77" },
+  oceanSky: { name: "Ocean Sky", primary: "2, 132, 199", secondary: "56, 189, 248", accent: "125, 211, 252" },
+  limeMint: { name: "Lime Mint", primary: "101, 163, 13", secondary: "16, 185, 129", accent: "132, 204, 22" },
+  violetMagenta: { name: "Violet Magenta", primary: "124, 58, 237", secondary: "217, 70, 239", accent: "232, 121, 249" }
 };
 
 type HeroContent = {
