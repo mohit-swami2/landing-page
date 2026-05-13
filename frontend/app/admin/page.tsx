@@ -2,7 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { useEffect, useMemo, useState } from "react";
-import { apiFetch, API_BASE } from "@/lib/api";
+import { ApiError, apiFetch, API_BASE } from "@/lib/api";
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend } from "chart.js";
 import { Line } from "react-chartjs-2";
 
@@ -67,12 +67,31 @@ export default function AdminPage() {
     window.setTimeout(() => setNotice(null), 2500);
   };
 
+  const logoutForInvalidToken = (message = "Invalid token. Please login again.") => {
+    sessionStorage.removeItem("admin-token");
+    setToken("");
+    toast("error", message);
+  };
+
+  const isUnauthorizedError = (err: unknown) => {
+    if (err instanceof ApiError) return err.status === 401;
+    if (err instanceof Error) {
+      const message = err.message.toLowerCase();
+      return message.includes("invalid token") || message.includes("unauthorized");
+    }
+    return false;
+  };
+
   const runAction = async (action: () => Promise<void>, successText: string) => {
     setBusy(true);
     try {
       await action();
       toast("success", successText);
     } catch (err) {
+      if (token && isUnauthorizedError(err)) {
+        logoutForInvalidToken(err instanceof Error ? err.message : undefined);
+        return;
+      }
       toast("error", err instanceof Error ? err.message : "Action failed");
     } finally {
       setBusy(false);
@@ -117,7 +136,13 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!token) return;
-    loadAll(token).catch((e) => toast("error", e.message));
+    loadAll(token).catch((e) => {
+      if (isUnauthorizedError(e)) {
+        logoutForInvalidToken(e instanceof Error ? e.message : undefined);
+        return;
+      }
+      toast("error", e instanceof Error ? e.message : "Failed to load admin data");
+    });
   }, [token]);
 
   const chartData = useMemo(

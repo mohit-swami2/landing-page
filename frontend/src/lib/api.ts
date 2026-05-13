@@ -14,6 +14,16 @@ function resolveApiBase() {
 
 export const API_BASE = resolveApiBase();
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 export async function apiFetch(path: string, options: RequestInit = {}, token?: string) {
   const headers: Record<string, string> = {
     ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
@@ -29,7 +39,7 @@ export async function apiFetch(path: string, options: RequestInit = {}, token?: 
 
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || "Request failed");
+    throw new ApiError(data.message || "Request failed", res.status);
   }
   return res.json();
 }
