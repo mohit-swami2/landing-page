@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
-    "dev:frontend": "next dev ./frontend",
+    "dev:frontend": "next dev ./frontend -p 3002",
     "dev:backend": "node --watch backend/src/server.js",
     "build": "next build ./frontend",
     "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
