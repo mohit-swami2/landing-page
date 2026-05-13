@@ -36,9 +36,15 @@ export async function sendTemplatedEmail({ to, key, data }) {
   }
 
   await transporter.sendMail({
-    from: process.env.EMAIL_FROM || "no-reply@landing-page.local",
+    from:
+      process.env.SMTP_FROM ||
+      process.env.SMTP_USER ||
+      process.env.EMAIL_FROM ||
+      "no-reply@landing-page.local",
     to,
     subject: template.subject,
     html
   });
+
+  console.log(`[email:${key}] delivered to=${to}`);
 }

@@ -32,7 +32,31 @@ const themes = {
   amberGold: { name: "Amber Gold", primary: "217, 119, 6", secondary: "245, 158, 11", accent: "252, 211, 77" },
   oceanSky: { name: "Ocean Sky", primary: "2, 132, 199", secondary: "56, 189, 248", accent: "125, 211, 252" },
   limeMint: { name: "Lime Mint", primary: "101, 163, 13", secondary: "16, 185, 129", accent: "132, 204, 22" },
-  violetMagenta: { name: "Violet Magenta", primary: "124, 58, 237", secondary: "217, 70, 239", accent: "232, 121, 249" }
+  violetMagenta: { name: "Violet Magenta", primary: "124, 58, 237", secondary: "217, 70, 239", accent: "232, 121, 249" },
+  crimsonCoral: { name: "Crimson Coral", primary: "190, 24, 93", secondary: "251, 113, 133", accent: "253, 164, 175" },
+  forestAqua: { name: "Forest Aqua", primary: "22, 101, 52", secondary: "6, 182, 212", accent: "45, 212, 191" },
+  slateNeon: { name: "Slate Neon", primary: "30, 41, 59", secondary: "34, 211, 238", accent: "125, 211, 252" },
+  royalGold: { name: "Royal Gold", primary: "67, 56, 202", secondary: "234, 179, 8", accent: "250, 204, 21" },
+  midnightCyan: { name: "Midnight Cyan", primary: "15, 23, 42", secondary: "6, 182, 212", accent: "34, 211, 238" },
+  lavaGlow: { name: "Lava Glow", primary: "185, 28, 28", secondary: "249, 115, 22", accent: "251, 146, 60" },
+  mintBerry: { name: "Mint Berry", primary: "16, 185, 129", secondary: "236, 72, 153", accent: "244, 114, 182" },
+  copperTeal: { name: "Copper Teal", primary: "180, 83, 9", secondary: "13, 148, 136", accent: "20, 184, 166" },
+  neonLime: { name: "Neon Lime", primary: "132, 204, 22", secondary: "34, 197, 94", accent: "163, 230, 53" },
+  arcticBlue: { name: "Arctic Blue", primary: "14, 165, 233", secondary: "103, 232, 249", accent: "56, 189, 248" },
+  plumWine: { name: "Plum Wine", primary: "126, 34, 206", secondary: "190, 24, 93", accent: "217, 70, 239" },
+  peachFuzz: { name: "Peach Fuzz", primary: "251, 113, 133", secondary: "251, 146, 60", accent: "253, 186, 116" },
+  cyberPurple: { name: "Cyber Purple", primary: "109, 40, 217", secondary: "34, 211, 238", accent: "168, 85, 247" },
+  obsidianAmber: { name: "Obsidian Amber", primary: "17, 24, 39", secondary: "245, 158, 11", accent: "251, 191, 36" },
+  skyLavender: { name: "Sky Lavender", primary: "56, 189, 248", secondary: "192, 132, 252", accent: "216, 180, 254" },
+  rubySun: { name: "Ruby Sun", primary: "225, 29, 72", secondary: "250, 204, 21", accent: "253, 224, 71" },
+  pineGold: { name: "Pine Gold", primary: "22, 101, 52", secondary: "245, 158, 11", accent: "250, 204, 21" },
+  indigoMint: { name: "Indigo Mint", primary: "67, 56, 202", secondary: "52, 211, 153", accent: "110, 231, 183" },
+  aquaRose: { name: "Aqua Rose", primary: "6, 182, 212", secondary: "244, 63, 94", accent: "251, 113, 133" },
+  steelBlue: { name: "Steel Blue", primary: "51, 65, 85", secondary: "59, 130, 246", accent: "96, 165, 250" },
+  mangoFire: { name: "Mango Fire", primary: "245, 158, 11", secondary: "239, 68, 68", accent: "251, 146, 60" },
+  glacierGreen: { name: "Glacier Green", primary: "20, 184, 166", secondary: "134, 239, 172", accent: "94, 234, 212" },
+  cosmicOrange: { name: "Cosmic Orange", primary: "124, 45, 18", secondary: "251, 146, 60", accent: "253, 186, 116" },
+  graphiteAqua: { name: "Graphite Aqua", primary: "31, 41, 55", secondary: "45, 212, 191", accent: "94, 234, 212" }
 };
 
 type HeroContent = {
@@ -70,13 +94,16 @@ const defaultHeroContent: HeroContent = {
   techMarquee: ["Node.js", "React", "MongoDB", "Express", "TypeScript", "AWS", "Docker", "PostgreSQL", "Next.js", "GraphQL"]
 };
 
-export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialThemeKey?: ThemeKey }) {
+export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialThemeKey?: string }) {
+  const resolvedInitialTheme: ThemeKey =
+    initialThemeKey && initialThemeKey in themes ? (initialThemeKey as ThemeKey) : "purpleCyan";
   const [selectedProject, setSelectedProject] = useState<number | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [currentTheme, setCurrentTheme] = useState<ThemeKey>(initialThemeKey);
+  const [currentTheme, setCurrentTheme] = useState<ThemeKey>(resolvedInitialTheme);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+  const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
   const [heroContent, setHeroContent] = useState<HeroContent>(defaultHeroContent);
   const [socialLinks, setSocialLinks] = useState<{ platformName: string; icon: string; url: string }[]>([]);
   const [isResumeOpen, setIsResumeOpen] = useState(false);
@@ -138,15 +165,6 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     };
     window.addEventListener("beforeunload", onUnload);
 
-    fetch(`${API_BASE}/theme/public`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (data?.themeKey && themes[data.themeKey as keyof typeof themes]) {
-          setCurrentTheme(data.themeKey as keyof typeof themes);
-          window.localStorage.setItem("lp_theme_key", data.themeKey as string);
-        }
-      })
-      .catch(() => null);
     fetch(`${API_BASE}/projects/public`)
       .then((r) => r.json())
       .then((data) => {
@@ -216,15 +234,26 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     []
   );
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmittingQuery) return;
+    setIsSubmittingQuery(true);
     const sessionId = sessionStorage.getItem("lp_session_id") || "";
-    fetch(`${API_BASE}/queries/public`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...formData, sessionId })
-    }).catch(() => null);
-    setFormData({ name: "", email: "", message: "" });
+    try {
+      const res = await fetch(`${API_BASE}/queries/public`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, sessionId })
+      });
+      if (!res.ok) {
+        throw new Error("Failed to submit message");
+      }
+      setFormData({ name: "", email: "", message: "" });
+    } catch {
+      // Keep inputs as-is so user can retry without retyping.
+    } finally {
+      setIsSubmittingQuery(false);
+    }
   };
 
   const socialIconByName: Record<string, typeof Github> = {
@@ -583,24 +612,41 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
             </h2>
             <p className="text-center text-slate-400 mb-12 max-w-2xl mx-auto">Have a project in mind or want to collaborate? Drop me a message and let&apos;s build something amazing together.</p>
             <div className="grid md:grid-cols-2 gap-8">
-              <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50 shadow-xl">
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label className="block text-slate-300 mb-2 text-sm">Your Name</label>
-                    <motion.input whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all" placeholder="John Doe" />
+              <motion.div initial={{ opacity: 0, x: -50 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.8, ease: "easeOut" }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border border-slate-700/50 shadow-xl">
+                {isSubmittingQuery ? (
+                  <>
+                    <div
+                      className="absolute inset-0 z-10 rounded-2xl"
+                      style={{ background: `rgba(${theme.primary}, 0.14)` }}
+                    />
+                    <div
+                      className="absolute left-0 top-0 z-20 h-1 rounded-t-2xl animate-pulse"
+                      style={{
+                        width: "100%",
+                        background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))`
+                      }}
+                    />
+                  </>
+                ) : null}
+                <form onSubmit={handleSubmit} className={`space-y-6 transition-opacity ${isSubmittingQuery ? "opacity-55 pointer-events-none" : "opacity-100"}`}>
+                  <fieldset disabled={isSubmittingQuery}>
+                  <div className="my-2">
+                    <label className="block text-slate-300 mb-4 text-sm">Your Name</label>
+                    <motion.input whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} type="text" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required className=" mb-2 w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all" placeholder="John Doe" />
                   </div>
-                  <div>
-                    <label className="block text-slate-300 mb-2 text-sm">Your Email</label>
-                    <motion.input whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all" placeholder="john@example.com" />
+                  <div className="my-2">
+                    <label className="block text-slate-300 mb-4 text-sm">Your Email</label>
+                    <motion.input whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} required className="mb-2 w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all" placeholder="john@example.com" />
                   </div>
-                  <div>
-                    <label className="block text-slate-300 mb-2 text-sm">Your Message</label>
-                    <motion.textarea whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} required rows={5} className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all resize-none" placeholder="Tell me about your project..." />
+                  <div className="my-2">
+                    <label className="block text-slate-300 mb-4 text-sm">Your Message</label>
+                    <motion.textarea whileFocus={{ scale: 1.01 }} transition={{ type: "spring", stiffness: 300, damping: 20 }} value={formData.message} onChange={(e) => setFormData({ ...formData, message: e.target.value })} required rows={5} className="mb-2 w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-lg text-slate-200 focus:outline-none focus:border-opacity-100 transition-all resize-none" placeholder="Tell me about your project..." />
                   </div>
-                  <motion.button type="submit" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 17 }} className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2 shadow-lg" style={{ background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
+                  <motion.button type="submit" whileHover={{ scale: isSubmittingQuery ? 1 : 1.02 }} whileTap={{ scale: isSubmittingQuery ? 1 : 0.98 }} transition={{ type: "spring", stiffness: 400, damping: 17 }} className="w-full py-3 rounded-lg text-white font-medium flex items-center justify-center gap-2 shadow-lg disabled:cursor-not-allowed" style={{ background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
                     <Send size={18} />
-                    <span>Send Message</span>
+                    <span>{isSubmittingQuery ? "Sending..." : "Send Message"}</span>
                   </motion.button>
+                  </fieldset>
                 </form>
               </motion.div>
 

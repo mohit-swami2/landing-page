@@ -1,7 +1,74 @@
 import { PortfolioPage } from "@/features/portfolio/PortfolioPage";
 
-const VALID_THEMES = new Set(["purpleCyan", "emeraldTeal", "sunsetOrange", "blueIndigo", "rosePink"] as const);
-type ThemeKey = "purpleCyan" | "emeraldTeal" | "sunsetOrange" | "blueIndigo" | "rosePink";
+const VALID_THEMES = new Set([
+  "purpleCyan",
+  "emeraldTeal",
+  "sunsetOrange",
+  "blueIndigo",
+  "rosePink",
+  "amberGold",
+  "oceanSky",
+  "limeMint",
+  "violetMagenta",
+  "crimsonCoral",
+  "forestAqua",
+  "slateNeon",
+  "royalGold",
+  "midnightCyan",
+  "lavaGlow",
+  "mintBerry",
+  "copperTeal",
+  "neonLime",
+  "arcticBlue",
+  "plumWine",
+  "peachFuzz",
+  "cyberPurple",
+  "obsidianAmber",
+  "skyLavender",
+  "rubySun",
+  "pineGold",
+  "indigoMint",
+  "aquaRose",
+  "steelBlue",
+  "mangoFire",
+  "glacierGreen",
+  "cosmicOrange",
+  "graphiteAqua"
+] as const);
+type ThemeKey =
+  | "purpleCyan"
+  | "emeraldTeal"
+  | "sunsetOrange"
+  | "blueIndigo"
+  | "rosePink"
+  | "amberGold"
+  | "oceanSky"
+  | "limeMint"
+  | "violetMagenta"
+  | "crimsonCoral"
+  | "forestAqua"
+  | "slateNeon"
+  | "royalGold"
+  | "midnightCyan"
+  | "lavaGlow"
+  | "mintBerry"
+  | "copperTeal"
+  | "neonLime"
+  | "arcticBlue"
+  | "plumWine"
+  | "peachFuzz"
+  | "cyberPurple"
+  | "obsidianAmber"
+  | "skyLavender"
+  | "rubySun"
+  | "pineGold"
+  | "indigoMint"
+  | "aquaRose"
+  | "steelBlue"
+  | "mangoFire"
+  | "glacierGreen"
+  | "cosmicOrange"
+  | "graphiteAqua";
 
 function resolveServerApiBase() {
   const fromEnv = process.env.NEXT_PUBLIC_API_BASE?.trim();

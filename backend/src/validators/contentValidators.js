@@ -46,7 +46,31 @@ export const themeSchema = Joi.object({
       "amberGold",
       "oceanSky",
       "limeMint",
-      "violetMagenta"
+      "violetMagenta",
+      "crimsonCoral",
+      "forestAqua",
+      "slateNeon",
+      "royalGold",
+      "midnightCyan",
+      "lavaGlow",
+      "mintBerry",
+      "copperTeal",
+      "neonLime",
+      "arcticBlue",
+      "plumWine",
+      "peachFuzz",
+      "cyberPurple",
+      "obsidianAmber",
+      "skyLavender",
+      "rubySun",
+      "pineGold",
+      "indigoMint",
+      "aquaRose",
+      "steelBlue",
+      "mangoFire",
+      "glacierGreen",
+      "cosmicOrange",
+      "graphiteAqua"
     )
     .required()
 });

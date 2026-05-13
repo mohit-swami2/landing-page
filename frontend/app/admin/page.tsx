@@ -20,7 +20,31 @@ const themePresets = [
   { key: "amberGold", name: "Amber Gold", preview: "linear-gradient(135deg,#d97706,#f59e0b)" },
   { key: "oceanSky", name: "Ocean Sky", preview: "linear-gradient(135deg,#0284c7,#38bdf8)" },
   { key: "limeMint", name: "Lime Mint", preview: "linear-gradient(135deg,#65a30d,#10b981)" },
-  { key: "violetMagenta", name: "Violet Magenta", preview: "linear-gradient(135deg,#7c3aed,#d946ef)" }
+  { key: "violetMagenta", name: "Violet Magenta", preview: "linear-gradient(135deg,#7c3aed,#d946ef)" },
+  { key: "crimsonCoral", name: "Crimson Coral", preview: "linear-gradient(135deg,#be123c,#fb7185)" },
+  { key: "forestAqua", name: "Forest Aqua", preview: "linear-gradient(135deg,#166534,#06b6d4)" },
+  { key: "slateNeon", name: "Slate Neon", preview: "linear-gradient(135deg,#1e293b,#22d3ee)" },
+  { key: "royalGold", name: "Royal Gold", preview: "linear-gradient(135deg,#4338ca,#eab308)" },
+  { key: "midnightCyan", name: "Midnight Cyan", preview: "linear-gradient(135deg,#0f172a,#06b6d4)" },
+  { key: "lavaGlow", name: "Lava Glow", preview: "linear-gradient(135deg,#b91c1c,#f97316)" },
+  { key: "mintBerry", name: "Mint Berry", preview: "linear-gradient(135deg,#10b981,#ec4899)" },
+  { key: "copperTeal", name: "Copper Teal", preview: "linear-gradient(135deg,#b45309,#0d9488)" },
+  { key: "neonLime", name: "Neon Lime", preview: "linear-gradient(135deg,#84cc16,#22c55e)" },
+  { key: "arcticBlue", name: "Arctic Blue", preview: "linear-gradient(135deg,#0ea5e9,#67e8f9)" },
+  { key: "plumWine", name: "Plum Wine", preview: "linear-gradient(135deg,#7e22ce,#be123c)" },
+  { key: "peachFuzz", name: "Peach Fuzz", preview: "linear-gradient(135deg,#fb7185,#fb923c)" },
+  { key: "cyberPurple", name: "Cyber Purple", preview: "linear-gradient(135deg,#6d28d9,#22d3ee)" },
+  { key: "obsidianAmber", name: "Obsidian Amber", preview: "linear-gradient(135deg,#111827,#f59e0b)" },
+  { key: "skyLavender", name: "Sky Lavender", preview: "linear-gradient(135deg,#38bdf8,#c084fc)" },
+  { key: "rubySun", name: "Ruby Sun", preview: "linear-gradient(135deg,#e11d48,#facc15)" },
+  { key: "pineGold", name: "Pine Gold", preview: "linear-gradient(135deg,#166534,#f59e0b)" },
+  { key: "indigoMint", name: "Indigo Mint", preview: "linear-gradient(135deg,#4338ca,#34d399)" },
+  { key: "aquaRose", name: "Aqua Rose", preview: "linear-gradient(135deg,#06b6d4,#f43f5e)" },
+  { key: "steelBlue", name: "Steel Blue", preview: "linear-gradient(135deg,#334155,#3b82f6)" },
+  { key: "mangoFire", name: "Mango Fire", preview: "linear-gradient(135deg,#f59e0b,#ef4444)" },
+  { key: "glacierGreen", name: "Glacier Green", preview: "linear-gradient(135deg,#14b8a6,#86efac)" },
+  { key: "cosmicOrange", name: "Cosmic Orange", preview: "linear-gradient(135deg,#7c2d12,#fb923c)" },
+  { key: "graphiteAqua", name: "Graphite Aqua", preview: "linear-gradient(135deg,#1f2937,#2dd4bf)" }
 ] as const;
 
 export default function AdminPage() {
@@ -28,7 +52,7 @@ export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("projects");
   const [email, setEmail] = useState("mohit@mailinator.com");
   const [password, setPassword] = useState("123123123");
-  const [busy, setBusy] = useState(false);
+  const [pendingActions, setPendingActions] = useState<Record<string, boolean>>({});
   const [notice, setNotice] = useState<Notice>(null);
 
   const [projects, setProjects] = useState<any[]>([]);
@@ -66,6 +90,7 @@ export default function AdminPage() {
     url: ""
   });
 
+  // Shows compact success/error notices in one place.
   const toast = (type: "success" | "error", text: string) => {
     setNotice({ type, text });
     window.setTimeout(() => setNotice(null), 2500);
@@ -86,8 +111,13 @@ export default function AdminPage() {
     return false;
   };
 
-  const runAction = async (action: () => Promise<void>, successText: string) => {
-    setBusy(true);
+  const isPending = (key: string) => Boolean(pendingActions[key]);
+
+  /**
+   * Runs any admin action with isolated loading state and unified toast/errors.
+   */
+  const runAction = async (key: string, action: () => Promise<void>, successText: string) => {
+    setPendingActions((prev) => ({ ...prev, [key]: true }));
     try {
       await action();
       toast("success", successText);
@@ -98,10 +128,15 @@ export default function AdminPage() {
       }
       toast("error", err instanceof Error ? err.message : "Action failed");
     } finally {
-      setBusy(false);
+      setPendingActions((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
     }
   };
 
+  // Fetches every admin-managed resource in parallel to keep dashboard in sync.
   const loadAll = async (authToken: string) => {
     const [p, s, q, a, t, h, m] = await Promise.all([
       apiFetch("/projects", {}, authToken),
@@ -131,6 +166,11 @@ export default function AdminPage() {
       techMarqueeInput: Array.isArray(h.techMarquee) ? h.techMarquee.join(", ") : ""
     });
     setAnalytics(m);
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem("admin-token");
+    setToken("");
   };
 
   useEffect(() => {
@@ -170,7 +210,7 @@ export default function AdminPage() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            runAction(async () => {
+            runAction("login", async () => {
               const data = await apiFetch("/auth/login", {
                 method: "POST",
                 body: JSON.stringify({ email, password })
@@ -184,8 +224,12 @@ export default function AdminPage() {
           <h1 className="text-2xl font-bold">Admin Login</h1>
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" value={email} onChange={(e) => setEmail(e.target.value)} />
           <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <button style={{ cursor: 'pointer' }} disabled={busy} className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60">
-            {busy ? "Please wait..." : "Login"}
+          <button
+            style={{ cursor: "pointer" }}
+            disabled={isPending("login")}
+            className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500 transition hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isPending("login") ? "Please wait..." : "Login"}
           </button>
           {notice ? <p className={`text-sm ${notice.type === "error" ? "text-red-300" : "text-emerald-300"}`}>{notice.text}</p> : null}
         </form>
@@ -200,17 +244,20 @@ export default function AdminPage() {
           <h1 className="text-xl font-bold mb-4">Admin</h1>
           <div className="space-y-2">
             {(["projects", "about", "social", "queries", "theme", "hero", "analytics"] as Tab[]).map((t) => (
-              <button key={t} onClick={() => setTab(t)} className={`w-full text-left px-3 py-2 rounded capitalize ${tab === t ? "bg-purple-600" : "bg-slate-800 hover:bg-slate-700"}`}>
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`w-full text-left px-3 py-2 rounded capitalize transition ${
+                  tab === t ? "bg-purple-600 text-white" : "bg-slate-800 hover:bg-slate-700 hover:text-purple-200"
+                }`}
+              >
                 {t}
               </button>
             ))}
           </div>
           <button
-            onClick={() => {
-              sessionStorage.removeItem("admin-token");
-              setToken("");
-            }}
-            className="mt-4 w-full px-3 py-2 rounded bg-slate-800 border border-slate-600"
+            onClick={logout}
+            className="mt-4 w-full px-3 py-2 rounded bg-slate-800 border border-slate-600 transition hover:bg-slate-700"
           >
             Logout
           </button>
@@ -224,7 +271,7 @@ export default function AdminPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  runAction(async () => {
+                  runAction("project.create", async () => {
                     const fd = new FormData();
                     fd.append("name", projectForm.name);
                     fd.append("slug", projectForm.slug);
@@ -249,7 +296,12 @@ export default function AdminPage() {
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="Tech Stack (comma separated)" value={projectForm.techStack} onChange={(e) => setProjectForm({ ...projectForm, techStack: e.target.value })} />
                 <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={6} placeholder="Detailed Description (HTML supported)" value={projectForm.detailedDescription} onChange={(e) => setProjectForm({ ...projectForm, detailedDescription: e.target.value })} />
                 <input type="file" multiple accept="image/*" onChange={(e) => setProjectForm({ ...projectForm, imageFiles: Array.from(e.target.files || []) })} className="w-full p-2 rounded bg-slate-800 border border-slate-700 text-slate-300" />
-                <button disabled={busy} className="px-4 py-2 rounded bg-gradient-to-r from-purple-600 to-cyan-500 disabled:opacity-60">{busy ? "Saving..." : "Save Project"}</button>
+                <button
+                  disabled={isPending("project.create")}
+                  className="px-4 py-2 rounded bg-gradient-to-r from-purple-600 to-cyan-500 transition hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isPending("project.create") ? "Saving..." : "Save Project"}
+                </button>
               </form>
               <div className="grid md:grid-cols-2 gap-4">
                 {projects.map((p) => (
@@ -273,8 +325,17 @@ export default function AdminPage() {
               <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" value={about.title} onChange={(e) => setAbout({ ...about, title: e.target.value })} />
               <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={4} value={about.bio} onChange={(e) => setAbout({ ...about, bio: e.target.value })} />
               <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={4} value={about.profileDetails} onChange={(e) => setAbout({ ...about, profileDetails: e.target.value })} />
-              <button disabled={busy} className="px-4 py-2 rounded bg-purple-600 disabled:opacity-60" onClick={() => runAction(async () => { await apiFetch("/about", { method: "PUT", body: JSON.stringify(about) }, token); await loadAll(token); }, "About updated")}>
-                {busy ? "Saving..." : "Save About"}
+              <button
+                disabled={isPending("about.save")}
+                className="px-4 py-2 rounded bg-purple-600 transition hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={() =>
+                  runAction("about.save", async () => {
+                    await apiFetch("/about", { method: "PUT", body: JSON.stringify(about) }, token);
+                    await loadAll(token);
+                  }, "About updated")
+                }
+              >
+                {isPending("about.save") ? "Saving..." : "Save About"}
               </button>
             </section>
           )}
@@ -284,7 +345,7 @@ export default function AdminPage() {
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
-                  runAction(async () => {
+                  runAction("social.create", async () => {
                     await apiFetch("/social-links", { method: "POST", body: JSON.stringify({ ...socialForm, visible: true }) }, token);
                     setSocialForm({ platformName: "", icon: "github", url: "" });
                     await loadAll(token);
@@ -296,7 +357,12 @@ export default function AdminPage() {
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="Platform Name (GitHub, LinkedIn, Mail)" value={socialForm.platformName} onChange={(e) => setSocialForm({ ...socialForm, platformName: e.target.value })} />
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="Icon key (github/linkedin/mail/twitter)" value={socialForm.icon} onChange={(e) => setSocialForm({ ...socialForm, icon: e.target.value })} />
                 <input className="w-full p-2 rounded bg-slate-800 border border-slate-700" placeholder="URL (https://... or mailto:...)" value={socialForm.url} onChange={(e) => setSocialForm({ ...socialForm, url: e.target.value })} />
-                <button disabled={busy} className="px-4 py-2 rounded bg-purple-600 disabled:opacity-60">{busy ? "Saving..." : "Add Social"}</button>
+                <button
+                  disabled={isPending("social.create")}
+                  className="px-4 py-2 rounded bg-purple-600 transition hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isPending("social.create") ? "Saving..." : "Add Social"}
+                </button>
               </form>
               {socials.map((s) => (
                 <div key={s._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 flex items-center justify-between">
@@ -304,8 +370,17 @@ export default function AdminPage() {
                     <p>{s.platformName}</p>
                     <p className="text-xs text-slate-300">{s.url}</p>
                   </div>
-                  <button disabled={busy} onClick={() => runAction(async () => { await apiFetch(`/social-links/${s._id}`, { method: "PUT", body: JSON.stringify({ ...s, visible: !s.visible }) }, token); await loadAll(token); }, `Social ${s.visible ? "hidden" : "shown"}`)} className="px-3 py-2 rounded bg-slate-800 disabled:opacity-60">
-                    {s.visible ? "Hide" : "Show"}
+                  <button
+                    disabled={isPending(`social.toggle.${s._id}`)}
+                    onClick={() =>
+                      runAction(`social.toggle.${s._id}`, async () => {
+                        await apiFetch(`/social-links/${s._id}`, { method: "PUT", body: JSON.stringify({ ...s, visible: !s.visible }) }, token);
+                        await loadAll(token);
+                      }, `Social ${s.visible ? "hidden" : "shown"}`)
+                    }
+                    className="px-3 py-2 rounded bg-slate-800 transition hover:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {isPending(`social.toggle.${s._id}`) ? "Working..." : s.visible ? "Hide" : "Show"}
                   </button>
                 </div>
               ))}
@@ -316,12 +391,41 @@ export default function AdminPage() {
           {tab === "queries" && (
             <section className="space-y-3">
               {queries.map((q) => (
-                <div key={q._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700">
-                  <div className="flex justify-between">
-                    <p>{q.name} ({q.email})</p>
-                    <button disabled={busy} className="text-sm disabled:opacity-60" onClick={() => runAction(async () => { await apiFetch(`/queries/${q._id}/status`, { method: "PATCH", body: JSON.stringify({ status: q.status === "seen" ? "unseen" : "seen" }) }, token); await loadAll(token); }, "Query status updated")}>
-                      {q.status}
-                    </button>
+                <div key={q._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 transition hover:border-purple-500/40">
+                  <div className="flex justify-between items-start gap-3">
+                    <p className="font-medium text-slate-100">
+                      {q.name} <span className="text-slate-400">({q.email})</span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <button
+                        disabled={isPending(`query.status.${q._id}`)}
+                        className={`text-xs px-3 py-1.5 rounded border transition disabled:opacity-60 disabled:cursor-not-allowed ${
+                          q.status === "seen"
+                            ? "border-emerald-500/50 text-emerald-300 hover:bg-emerald-500/10"
+                            : "border-amber-500/50 text-amber-300 hover:bg-amber-500/10"
+                        }`}
+                        onClick={() =>
+                          runAction(`query.status.${q._id}`, async () => {
+                            await apiFetch(`/queries/${q._id}/status`, { method: "PATCH", body: JSON.stringify({ status: q.status === "seen" ? "unseen" : "seen" }) }, token);
+                            await loadAll(token);
+                          }, "Query status updated")
+                        }
+                      >
+                        {isPending(`query.status.${q._id}`) ? "Updating..." : q.status === "seen" ? "Seen" : "Unseen"}
+                      </button>
+                      <button
+                        disabled={isPending(`query.delete.${q._id}`)}
+                        className="text-xs px-3 py-1.5 rounded border border-rose-500/50 text-rose-300 transition hover:bg-rose-500/10 disabled:opacity-60 disabled:cursor-not-allowed"
+                        onClick={() =>
+                          runAction(`query.delete.${q._id}`, async () => {
+                            await apiFetch(`/queries/${q._id}`, { method: "DELETE" }, token);
+                            await loadAll(token);
+                          }, "Query deleted")
+                        }
+                      >
+                        {isPending(`query.delete.${q._id}`) ? "Deleting..." : "Delete"}
+                      </button>
+                    </div>
                   </div>
                   <p className="text-sm text-slate-300 mt-2">{q.message}</p>
                 </div>
@@ -342,17 +446,17 @@ export default function AdminPage() {
                 ))}
               </div>
               <button
-                disabled={busy}
-                className="px-4 py-2 rounded bg-purple-600 disabled:opacity-60"
+                disabled={isPending("theme.save")}
+                className="px-4 py-2 rounded bg-purple-600 transition hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={() =>
-                  runAction(async () => {
+                  runAction("theme.save", async () => {
                     await apiFetch("/theme", { method: "PUT", body: JSON.stringify(theme) }, token);
                     window.localStorage.setItem("lp_theme_key", theme.themeKey);
                     await loadAll(token);
                   }, "Theme updated")
                 }
               >
-                {busy ? "Saving..." : "Save Theme"}
+                {isPending("theme.save") ? "Saving..." : "Save Theme"}
               </button>
             </section>
           )}
@@ -374,10 +478,10 @@ export default function AdminPage() {
               <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={4} placeholder={"Stats lines: value|label"} value={hero.statsInput} onChange={(e) => setHero({ ...hero, statsInput: e.target.value })} />
               <textarea className="w-full p-2 rounded bg-slate-800 border border-slate-700" rows={3} placeholder="Tech marquee (comma separated)" value={hero.techMarqueeInput} onChange={(e) => setHero({ ...hero, techMarqueeInput: e.target.value })} />
               <button
-                disabled={busy}
-                className="px-4 py-2 rounded bg-purple-600 disabled:opacity-60"
+                disabled={isPending("hero.save")}
+                className="px-4 py-2 rounded bg-purple-600 transition hover:bg-purple-500 disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={() =>
-                  runAction(async () => {
+                  runAction("hero.save", async () => {
                     const stats = hero.statsInput
                       .split("\n")
                       .map((line) => line.trim())
@@ -414,7 +518,7 @@ export default function AdminPage() {
                   }, "Hero content updated")
                 }
               >
-                {busy ? "Saving..." : "Save Hero"}
+                {isPending("hero.save") ? "Saving..." : "Save Hero"}
               </button>
             </section>
           )}
