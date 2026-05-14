@@ -50,8 +50,8 @@ const themePresets = [
 export default function AdminPage() {
   const [token, setToken] = useState("");
   const [tab, setTab] = useState<Tab>("projects");
-  const [email, setEmail] = useState("mohit@mailinator.com");
-  const [password, setPassword] = useState("123123123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [pendingActions, setPendingActions] = useState<Record<string, boolean>>({});
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -222,8 +222,8 @@ export default function AdminPage() {
           className="w-full max-w-md p-6 bg-slate-900/60 rounded-2xl border border-slate-700 space-y-4"
         >
           <h1 className="text-2xl font-bold">Admin Login</h1>
-          <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+          <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
           <button
             style={{ cursor: "pointer" }}
             disabled={isPending("login")}
