@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { createProject, deleteProject, getProject, listProjects, listPublicProjects, updateProject } from "../controllers/projectController.js";
 import { requireAuth } from "../middleware/auth.js";
-import { requireExternalStorage, upload } from "../middleware/upload.js";
+import { upload } from "../middleware/upload.js";
 import { validateBody } from "../middleware/validate.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { projectSchema } from "../validators/contentValidators.js";
@@ -12,14 +12,17 @@ function parseFormDataArrays(req, res, next) {
   if (req.body.techStack && typeof req.body.techStack === "string") {
     req.body.techStack = [req.body.techStack];
   }
+  if (req.body.existingImages && typeof req.body.existingImages === "string") {
+    req.body.existingImages = [req.body.existingImages];
+  }
   next();
 }
 
 router.get("/public", asyncHandler(listPublicProjects));
 router.get("/", requireAuth, asyncHandler(listProjects));
 router.get("/:id", requireAuth, asyncHandler(getProject));
-router.post("/", requireAuth, upload.array("images", 10), requireExternalStorage, validateBody(projectSchema), asyncHandler(createProject));
-router.put("/:id", requireAuth, upload.array("images", 10), requireExternalStorage, validateBody(projectSchema), asyncHandler(updateProject));
+router.post("/", requireAuth, upload.array("images", 10), parseFormDataArrays, validateBody(projectSchema), asyncHandler(createProject));
+router.put("/:id", requireAuth, upload.array("images", 10), parseFormDataArrays, validateBody(projectSchema), asyncHandler(updateProject));
 router.delete("/:id", requireAuth, asyncHandler(deleteProject));
 
 export default router;

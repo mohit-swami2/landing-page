@@ -307,7 +307,7 @@ export default function AdminPage() {
                 {projects.map((p) => (
                   <div key={p._id} className="p-4 rounded-xl bg-slate-900/60 border border-slate-700 flex gap-4 items-start">
                     {p.images && p.images.length > 0 && (
-                      <img src={`${API_BASE.replace(/\/api$/, "")}${p.images[0]}`} alt={p.name} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+                      <img src={p.images[0].startsWith("http") ? p.images[0] : `${API_BASE.replace(/\/api$/, "")}${p.images[0]}`} alt={p.name} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
                     )}
                     <div>
                       <p className="font-semibold">{p.name}</p>

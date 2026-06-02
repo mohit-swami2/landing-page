@@ -37,6 +37,10 @@ SMTP_PORT=587
 SMTP_SECURE=false
 SMTP_USER=
 SMTP_PASS=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+AWS_BUCKET_NAME=
 ```
 
 Default seeded admin:
@@ -61,3 +65,6 @@ npm run dev:backend
 - Queries: `/api/queries/*`
 - Theme Settings: `/api/theme/*`
 - Analytics: `/api/analytics/*`
+- Uploads (S3): `/api/uploads/*`
+
+Detailed S3 upload docs: `docs/s3-upload.md`

@@ -9,6 +9,7 @@ import queryRoutes from "./routes/query.routes.js";
 import themeRoutes from "./routes/theme.routes.js";
 import analyticsRoutes from "./routes/analytics.routes.js";
 import heroRoutes from "./routes/hero.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 import { globalErrorHandler, notFoundHandler } from "./middleware/error.js";
 import { asyncHandler } from "./middleware/asyncHandler.js";
 import { ensureAppInitialized } from "./config/init.js";
@@ -44,6 +45,7 @@ app.use("/api/queries", queryRoutes);
 app.use("/api/theme", themeRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/hero", heroRoutes);
+app.use("/api/uploads", uploadRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);
