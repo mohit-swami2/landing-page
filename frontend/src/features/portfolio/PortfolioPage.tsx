@@ -165,20 +165,44 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     };
     window.addEventListener("beforeunload", onUnload);
 
+    const resolveProjectImage = (img: string) => {
+      if (!img) return "";
+      if (img.startsWith("http")) return img;
+      if (img.startsWith("/")) return img;
+      return img;
+    };
+
+    const isBirlingoProject = (project: { slug?: string; title?: string; name?: string }) => {
+      const slug = String(project.slug || "").toLowerCase();
+      const title = String(project.title || project.name || "").toLowerCase();
+      return slug === "birlingo" || slug.includes("birlingo") || title === "birlingo";
+    };
+
+    const normalizeApiProject = (project: any) => ({
+      slug: project.slug || "",
+      title: project.name || project.title || "Untitled Project",
+      description: project.detailedDescription || project.description || "",
+      briefDescription: project.shortDescription || project.briefDescription || "",
+      tech: Array.isArray(project.techStack) ? project.techStack : Array.isArray(project.tech) ? project.tech : [],
+      images:
+        Array.isArray(project.images) && project.images.length
+          ? project.images.map(resolveProjectImage)
+          : ["https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"]
+    });
+
+    const buildDisplayProjects = (apiProjects: any[]) => {
+      const normalized = apiProjects.map(normalizeApiProject);
+      const birlingoFromApi = normalized.find(isBirlingoProject);
+      const otherPublic = normalized.filter((p) => !isBirlingoProject(p));
+      const birlingo = birlingoFromApi || BIRLINGO_FALLBACK;
+      return [birlingo, ...otherPublic];
+    };
+
     fetch(`${API_BASE}/projects/public`)
       .then((r) => r.json())
       .then((data) => {
-        if (Array.isArray(data) && data.length) {
-          const normalizedProjects = data.map((project: any) => ({
-            title: project.title || project.name || "Untitled Project",
-            description: project.description || project.detailedDescription || "",
-            briefDescription: project.briefDescription || project.shortDescription || "",
-            tech: Array.isArray(project.tech) ? project.tech : Array.isArray(project.techStack) ? project.techStack : [],
-            images: Array.isArray(project.images) && project.images.length ? project.images.map((img: string) => img.startsWith('/') ? `${API_BASE.replace(/\/api$/, '')}${img}` : img) : [
-              "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&h=800&fit=crop"
-            ]
-          }));
-          setProjects(normalizedProjects);
+        if (Array.isArray(data)) {
+          setProjects(data.length ? buildDisplayProjects(data) : [BIRLINGO_FALLBACK]);
         }
       })
       .catch(() => null);
@@ -275,20 +299,18 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     { name: "Docker", icon: Database, category: "side" }
   ];
 
-  const initialProjects = [
-    {
-      title: "Birlingo",
-      description:
-        "Birlingo is a full-stack EdTech platform designed to bridge the language gap for children through interactive, parent-guided learning journeys. The platform seamlessly integrates comprehensive course modules, real-time progress tracking, and secure payment gateway integration (Stripe & Paytm) to deliver an engaging educational experience.",
-      briefDescription: "EdTech platform for children's language learning with interactive modules and parent-guided journeys. My Role: Full stack developer with backend expertise. I designed and implemented the scalable cloud architecture on AWS and managed the end-to-end DevOps pipeline, ensuring high availability and seamless deployment of the platform. ",
-      tech: ["Node.js", "Angular", "MongoDB", "Stripe", "AWS", "nginx", "Cloudflare"],
-      images: [
-        "/uploads/Birlingo-home-screen.png",
-        "/uploads/Birlingo-lesson-family.png",
-      ]
-    }
-  ];
-  const [projects, setProjects] = useState(initialProjects);
+  const BIRLINGO_FALLBACK = {
+    slug: "birlingo",
+    title: "Birlingo",
+    description:
+      "Birlingo is a full-stack EdTech platform designed to bridge the language gap for children through interactive, parent-guided learning journeys. The platform seamlessly integrates comprehensive course modules, real-time progress tracking, and secure payment gateway integration (Stripe & Paytm) to deliver an engaging educational experience.",
+    briefDescription:
+      "EdTech platform for children's language learning with interactive modules and parent-guided journeys. Full stack developer with backend expertise — scalable AWS architecture and end-to-end DevOps.",
+    tech: ["Node.js", "Angular", "MongoDB", "Stripe", "AWS", "nginx", "Cloudflare"],
+    images: ["/uploads/Birlingo-home-screen.png", "/uploads/Birlingo-lesson-family.png"]
+  };
+
+  const [projects, setProjects] = useState([BIRLINGO_FALLBACK]);
 
   const achievements = [
     { icon: Award, text: "Published reusable error monitoring package on NPM" },
@@ -550,7 +572,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
+              <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.slug || project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                   <div className="absolute inset-0 animate-[spin_8s_linear_infinite]" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.2), rgba(${theme.secondary}, 0.2), rgba(${theme.accent}, 0.2))`, cursor: 'pointer' }} />
                 </div>

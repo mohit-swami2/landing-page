@@ -1,5 +1,6 @@
 import { connectDatabase } from "./db.js";
 import { seedDefaults } from "../seed/seedDefaults.js";
+import { ensureFeaturedProject } from "../seed/ensureFeaturedProject.js";
 
 let initPromise = null;
 
@@ -14,6 +15,7 @@ export async function ensureAppInitialized() {
 
   initPromise = (async () => {
     await connectDatabase();
+    await ensureFeaturedProject();
 
     if (shouldRunSeed()) {
       await seedDefaults();

@@ -8,6 +8,8 @@ export const projectSchema = Joi.object({
   liveLink: Joi.string().allow(""),
   techStack: Joi.array().items(Joi.string()).default([]),
   visible: Joi.boolean().optional(),
+  featured: Joi.boolean().optional(),
+  sortOrder: Joi.number().optional(),
   existingImages: Joi.array().items(Joi.string()).optional()
 });
 

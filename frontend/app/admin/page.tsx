@@ -31,6 +31,8 @@ type ProjectRecord = {
   liveLink?: string;
   techStack?: string[];
   visible?: boolean;
+  featured?: boolean;
+  sortOrder?: number;
   images?: string[];
   imageKeys?: string[];
   createdAt?: string;
@@ -1095,15 +1097,22 @@ export default function AdminPage() {
                                 <h4 className="font-semibold text-slate-100">{p.name}</h4>
                                 <p className="text-xs text-slate-500 font-mono">/{p.slug}</p>
                               </div>
-                              <span
-                                className={`text-xs px-2 py-0.5 rounded-full border ${
-                                  p.visible !== false
-                                    ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
-                                    : "border-slate-500/40 text-slate-400 bg-slate-500/10"
-                                }`}
-                              >
-                                {p.visible !== false ? "Public" : "Hidden"}
-                              </span>
+                              <div className="flex flex-wrap gap-1.5 justify-end">
+                                {p.slug === "birlingo" || p.featured ? (
+                                  <span className="text-xs px-2 py-0.5 rounded-full border border-purple-500/40 text-purple-300 bg-purple-500/10">
+                                    Featured
+                                  </span>
+                                ) : null}
+                                <span
+                                  className={`text-xs px-2 py-0.5 rounded-full border ${
+                                    p.visible !== false
+                                      ? "border-emerald-500/40 text-emerald-300 bg-emerald-500/10"
+                                      : "border-slate-500/40 text-slate-400 bg-slate-500/10"
+                                  }`}
+                                >
+                                  {p.visible !== false ? "Public" : "Hidden"}
+                                </span>
+                              </div>
                             </div>
                             <p className="text-sm text-slate-400 line-clamp-2">{p.shortDescription}</p>
                             {Array.isArray(p.techStack) && p.techStack.length > 0 ? (
@@ -1156,6 +1165,10 @@ export default function AdminPage() {
                                 type="button"
                                 disabled={isPending(`project.delete.${p._id}`)}
                                 onClick={() => {
+                                  if (p.slug === "birlingo" || p.featured) {
+                                    toast("error", "Birlingo is the featured project and cannot be deleted.");
+                                    return;
+                                  }
                                   if (!window.confirm(`Delete "${p.name}"? This cannot be undone.`)) return;
                                   runAction(
                                     `project.delete.${p._id}`,

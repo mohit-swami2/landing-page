@@ -9,7 +9,9 @@ const projectSchema = new mongoose.Schema(
     liveLink: { type: String, default: "" },
     techStack: { type: [String], default: [] },
     images: { type: [String], default: [] },
-    visible: { type: Boolean, default: true }
+    visible: { type: Boolean, default: true },
+    featured: { type: Boolean, default: false },
+    sortOrder: { type: Number, default: 0 }
   },
   { timestamps: true }
 );

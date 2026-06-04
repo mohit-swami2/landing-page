@@ -8,9 +8,21 @@ function isHttpUrl(value) {
 async function buildImageUrl(imageKeyOrUrl) {
   if (!imageKeyOrUrl) return null;
   if (isHttpUrl(imageKeyOrUrl)) return imageKeyOrUrl;
+  if (imageKeyOrUrl.startsWith("/")) return imageKeyOrUrl;
 
   const signed = await generatePresignedDownloadUrl({ key: imageKeyOrUrl });
   return signed.downloadUrl;
+}
+
+function sortProjectsForDisplay(projects) {
+  return [...projects].sort((a, b) => {
+    if (Boolean(a.featured) !== Boolean(b.featured)) {
+      return a.featured ? -1 : 1;
+    }
+    const orderDiff = (b.sortOrder ?? 0) - (a.sortOrder ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+  });
 }
 
 async function serializeProjectForUi(projectDoc) {
@@ -32,14 +44,16 @@ async function uploadIncomingFiles(files = []) {
 }
 
 export async function listProjects(_req, res) {
-  const data = await Project.find().sort({ createdAt: -1 });
-  const serialized = await Promise.all(data.map((project) => serializeProjectForUi(project)));
+  const data = await Project.find();
+  const sorted = sortProjectsForDisplay(data);
+  const serialized = await Promise.all(sorted.map((project) => serializeProjectForUi(project)));
   return res.json(serialized);
 }
 
 export async function listPublicProjects(_req, res) {
-  const data = await Project.find({ visible: true }).sort({ createdAt: -1 });
-  const serialized = await Promise.all(data.map((project) => serializeProjectForUi(project)));
+  const data = await Project.find({ visible: true });
+  const sorted = sortProjectsForDisplay(data);
+  const serialized = await Promise.all(sorted.map((project) => serializeProjectForUi(project)));
   return res.json(serialized);
 }
 
@@ -72,6 +86,11 @@ export async function updateProject(req, res) {
 }
 
 export async function deleteProject(req, res) {
+  const item = await Project.findById(req.params.id);
+  if (!item) return res.status(404).json({ message: "Not found" });
+  if (item.slug === "birlingo" || item.featured) {
+    return res.status(400).json({ message: "The featured Birlingo project cannot be deleted." });
+  }
   await Project.findByIdAndDelete(req.params.id);
   return res.json({ ok: true });
 }
