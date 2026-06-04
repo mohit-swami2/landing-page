@@ -14,13 +14,3 @@ export const upload = multer({
     return cb(null, true);
   }
 });
-
-export function requireExternalStorage(req, _res, next) {
-  if (!req.files?.length) return next();
-
-  const error = new Error(
-    "File uploads require cloud storage. Configure Cloudinary or S3 and upload files from your client or an upload service."
-  );
-  error.statusCode = 501;
-  return next(error);
-}
