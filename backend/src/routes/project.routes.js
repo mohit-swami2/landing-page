@@ -15,6 +15,9 @@ function parseFormDataArrays(req, res, next) {
   if (req.body.existingImages && typeof req.body.existingImages === "string") {
     req.body.existingImages = [req.body.existingImages];
   }
+  if (req.body.visible !== undefined && typeof req.body.visible === "string") {
+    req.body.visible = req.body.visible === "true";
+  }
   next();
 }
 
