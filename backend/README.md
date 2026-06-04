@@ -68,3 +68,8 @@ npm run dev:backend
 - Uploads (S3): `/api/uploads/*`
 
 Detailed S3 upload docs: `docs/s3-upload.md`
+
+**PDF setup guides (reusable for other projects):**
+
+- `docs/guides/S3-Bucket-Setup-Guide.pdf` — full AWS S3 + IAM configuration
+- `docs/guides/Vercel-Backend-Deployment-Guide.pdf` — host Express backend on Vercel
