@@ -2,6 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 import { useAdminPage } from "../hooks/useAdminPage";
+import { AdminToastViewport } from "../components/ui/AdminToast";
 
 export type AdminContextValue = ReturnType<typeof useAdminPage>;
 
@@ -9,7 +10,12 @@ const AdminContext = createContext<AdminContextValue | null>(null);
 
 export function AdminProvider({ children }: { children: ReactNode }) {
   const value = useAdminPage();
-  return <AdminContext.Provider value={value}>{children}</AdminContext.Provider>;
+  return (
+    <AdminContext.Provider value={value}>
+      <AdminToastViewport toasts={value.toasts} onDismiss={value.dismissToast} />
+      {children}
+    </AdminContext.Provider>
+  );
 }
 
 export function useAdmin() {

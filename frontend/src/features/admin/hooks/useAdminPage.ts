@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ApiError, apiFetch } from "@/lib/api";
 import { THEME_PRESETS } from "../constants";
-import type { AdminTab, Notice, ProjectRecord, QueryRecord, SocialRecord } from "../types";
+import type { AdminTab, ProjectRecord, QueryRecord, SocialRecord, ToastItem, ToastType } from "../types";
 import {
   daysSince,
   emptyProjectForm,
@@ -48,7 +48,7 @@ export function useAdminPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [pendingActions, setPendingActions] = useState<Record<string, boolean>>({});
-  const [notice, setNotice] = useState<Notice>(null);
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const [projects, setProjects] = useState<ProjectRecord[]>([]);
   const [socials, setSocials] = useState<SocialRecord[]>([]);
@@ -60,9 +60,16 @@ export function useAdminPage() {
   const [projectForm, setProjectForm] = useState(emptyProjectForm);
   const [socialForm, setSocialForm] = useState(emptySocialForm);
 
-  const toast = (type: "success" | "error", text: string) => {
-    setNotice({ type, text });
-    window.setTimeout(() => setNotice(null), 2500);
+  const dismissToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const toast = (type: ToastType, text: string, durationMs = 3200) => {
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    setToasts((prev) => [...prev, { id, type, text, durationMs }]);
   };
 
   const logoutForInvalidToken = (message = "Invalid token. Please login again.") => {
@@ -437,7 +444,8 @@ export function useAdminPage() {
     setEmail,
     password,
     setPassword,
-    notice,
+    toasts,
+    dismissToast,
     projects,
     socials,
     queries,

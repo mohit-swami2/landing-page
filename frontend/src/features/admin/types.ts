@@ -1,6 +1,13 @@
 export type AdminTab = "dashboard" | "projects" | "about" | "social" | "queries" | "theme" | "hero" | "analytics";
 
-export type Notice = { type: "success" | "error"; text: string } | null;
+export type ToastType = "success" | "error";
+
+export type ToastItem = {
+  id: string;
+  type: ToastType;
+  text: string;
+  durationMs?: number;
+};
 
 export type StatusFilter = "all" | string;
 

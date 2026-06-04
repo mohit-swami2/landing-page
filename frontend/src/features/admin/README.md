@@ -28,7 +28,7 @@ admin/
 │       ├── AdminBadge.tsx
 │       ├── StatCard.tsx
 │       ├── AdminListToolbar.tsx
-│       └── AdminNotice.tsx
+│       └── AdminToast.tsx
 └── sections/
     ├── DashboardSection.tsx
     ├── ProjectsSection.tsx

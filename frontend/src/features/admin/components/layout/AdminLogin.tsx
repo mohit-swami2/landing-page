@@ -3,11 +3,10 @@
 import { apiFetch } from "@/lib/api";
 import { AdminButton } from "../ui/AdminButton";
 import { AdminInput } from "../ui/AdminInput";
-import { AdminNotice } from "../ui/AdminNotice";
 import { useAdmin } from "../../context/AdminContext";
 
 export function AdminLogin() {
-  const { email, setEmail, password, setPassword, notice, isPending, runAction, setToken } = useAdmin();
+  const { email, setEmail, password, setPassword, isPending, runAction, setToken } = useAdmin();
 
   return (
     <main className="admin-root min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
@@ -69,8 +68,6 @@ export function AdminLogin() {
         <AdminButton type="submit" disabled={isPending("login")} className="w-full py-3">
           {isPending("login") ? "Signing in..." : "Sign In"}
         </AdminButton>
-
-        <AdminNotice notice={notice} />
       </form>
     </main>
   );

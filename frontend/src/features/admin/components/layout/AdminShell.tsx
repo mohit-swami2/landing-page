@@ -3,7 +3,6 @@
 import { NAV_ITEMS } from "../../constants";
 import { useAdmin } from "../../context/AdminContext";
 import { AdminButton } from "../ui/AdminButton";
-import { AdminNotice } from "../ui/AdminNotice";
 import { AdminHeader } from "./AdminHeader";
 import { AboutSection } from "../../sections/AboutSection";
 import { AnalyticsSection } from "../../sections/AnalyticsSection";
@@ -32,7 +31,6 @@ export function AdminShell() {
     setTab,
     logout,
     dataLoading,
-    notice,
     stalePendingQueries,
     unseenQueryCount
   } = useAdmin();
@@ -93,7 +91,6 @@ export function AdminShell() {
               <div className="h-8 w-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin" />
             </div>
           ) : null}
-          <AdminNotice notice={notice} />
           <Section />
           </section>
         </div>
