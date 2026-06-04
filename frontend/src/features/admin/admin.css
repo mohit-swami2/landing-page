@@ -1,0 +1,43 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+.admin-root {
+  font-family: Inter, system-ui, sans-serif;
+  background: #060b14;
+  color: #e2e8f0;
+}
+
+.admin-glow-card {
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  background: linear-gradient(145deg, rgba(13, 21, 38, 0.95), rgba(8, 14, 28, 0.98));
+  box-shadow: 0 0 28px rgba(34, 211, 238, 0.1);
+}
+
+.admin-glow-card-strong {
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.18), inset 0 0 60px rgba(34, 211, 238, 0.03);
+}
+
+.admin-input-glow:focus {
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 16px rgba(34, 211, 238, 0.2);
+}
+
+.admin-nav-active {
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.15);
+}
+
+.admin-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.35);
+  border-radius: 8px;
+}
+
+.admin-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+}

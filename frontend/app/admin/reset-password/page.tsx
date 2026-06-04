@@ -1,10 +1,12 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
 import { apiFetch } from "@/lib/api";
+import "@/features/admin/admin.css";
+import { AdminButton } from "@/features/admin/components/ui/AdminButton";
+import { AdminInput } from "@/features/admin/components/ui/AdminInput";
 
 function ResetPasswordContent() {
   const params = useSearchParams();
@@ -26,14 +28,16 @@ function ResetPasswordContent() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-6">
-      <form onSubmit={onSubmit} className="w-full max-w-md space-y-4 bg-slate-900/60 p-6 rounded-xl border border-slate-700">
-        <h1 className="text-2xl font-semibold">Reset Password</h1>
-        <input className="w-full p-3 rounded bg-slate-800 border border-slate-700" type="password" placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)} />
-        <button className="w-full p-3 rounded bg-gradient-to-r from-purple-600 to-cyan-500" type="submit">
+    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.12),transparent_50%)]" />
+      <form onSubmit={onSubmit} className="relative w-full max-w-md admin-glow-card-strong rounded-3xl p-8 space-y-5">
+        <h1 className="text-xl font-bold text-white">Reset Password</h1>
+        <p className="text-sm text-slate-400">Enter your new password below</p>
+        <AdminInput type="password" placeholder="New password" value={password} onChange={(e) => setPassword(e.target.value)} />
+        <AdminButton type="submit" className="w-full py-3">
           Reset Password
-        </button>
-        {message ? <p className="text-sm text-slate-300">{message}</p> : null}
+        </AdminButton>
+        {message ? <p className="text-sm text-cyan-200">{message}</p> : null}
       </form>
     </main>
   );
@@ -41,7 +45,7 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<main className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center">Loading...</main>}>
+    <Suspense fallback={<div className="min-h-screen admin-root flex items-center justify-center text-slate-400">Loading...</div>}>
       <ResetPasswordContent />
     </Suspense>
   );
