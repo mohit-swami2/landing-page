@@ -1161,7 +1161,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
               </motion.a>
             </div>
           </div>
-          <div className="mt-8 text-center text-slate-500 text-sm">© 2026 Mohit Swami. Built with React & Motion.</div>
+          <div className="mt-8 text-center text-slate-500 text-sm">© 2026 Mohit Swami</div>
         </div>
       </footer>
     </div>
