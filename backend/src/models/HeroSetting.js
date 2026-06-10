@@ -8,6 +8,16 @@ const heroStatSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const heroSkillSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    level: { type: Number, default: 80, min: 0, max: 100 },
+    icon: { type: String, default: "code" },
+    category: { type: String, enum: ["main", "side"], default: "main" }
+  },
+  { _id: false }
+);
+
 const heroSettingSchema = new mongoose.Schema(
   {
     key: { type: String, default: "default", unique: true },
@@ -35,6 +45,19 @@ const heroSettingSchema = new mongoose.Schema(
     techMarquee: {
       type: [String],
       default: ["Node.js", "React", "MongoDB", "Express", "TypeScript", "AWS", "Docker", "PostgreSQL", "Next.js", "GraphQL"]
+    },
+    skills: {
+      type: [heroSkillSchema],
+      default: [
+        { name: "Node.js", level: 95, icon: "server", category: "main" },
+        { name: "React", level: 90, icon: "code", category: "main" },
+        { name: "MongoDB", level: 88, icon: "database", category: "main" },
+        { name: "Express", level: 92, icon: "server", category: "main" },
+        { name: "Angular", level: 80, icon: "code", category: "main" },
+        { name: "AWS", level: 78, icon: "zap", category: "side" },
+        { name: "Cloudflare", level: 75, icon: "zap", category: "side" },
+        { name: "Docker", level: 82, icon: "database", category: "side" }
+      ]
     }
   },
   { timestamps: true }

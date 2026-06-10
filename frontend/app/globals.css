@@ -24,6 +24,20 @@
     @apply bg-background text-foreground;
   }
 
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  a[href],
+  label[for],
+  select,
+  summary {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
   html {
     font-size: var(--font-size);
     scroll-behavior: smooth;

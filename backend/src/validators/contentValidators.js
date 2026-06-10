@@ -101,5 +101,15 @@ export const heroSchema = Joi.object({
     )
     .min(1)
     .required(),
-  techMarquee: Joi.array().items(Joi.string().required()).min(1).required()
+  techMarquee: Joi.array().items(Joi.string().required()).min(1).required(),
+  skills: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().required(),
+        level: Joi.number().min(0).max(100).default(80),
+        icon: Joi.string().allow("").default("code"),
+        category: Joi.string().valid("main", "side").default("main")
+      })
+    )
+    .optional()
 });

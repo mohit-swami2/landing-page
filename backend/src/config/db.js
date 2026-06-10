@@ -30,7 +30,8 @@ export async function connectDatabase() {
         maxPoolSize: 10
       })
       .then((mongooseInstance) => {
-        console.log("[db] MongoDB connected");
+        const { host, name } = mongooseInstance.connection;
+        console.log(`[db] MongoDB connected -> host=${host} db=${name}`);
         return mongooseInstance;
       })
       .catch((error) => {

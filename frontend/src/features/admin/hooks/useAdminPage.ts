@@ -26,7 +26,9 @@ const defaultHero = () => ({
   secondaryCtaTarget: "contact",
   resumeUrl: "/resume.pdf",
   statsInput: "100k+|Users served\n5+|Years building\n20+|Projects shipped",
-  techMarqueeInput: "Node.js, React, MongoDB, Express, TypeScript, AWS, Docker, PostgreSQL, Next.js, GraphQL"
+  techMarqueeInput: "Node.js, React, MongoDB, Express, TypeScript, AWS, Docker, PostgreSQL, Next.js, GraphQL",
+  skillsInput:
+    "Node.js | 95 | main | server\nReact | 90 | main | code\nMongoDB | 88 | main | database\nExpress | 92 | main | server\nAngular | 80 | main | code\nAWS | 78 | side | zap\nCloudflare | 75 | side | zap\nDocker | 82 | side | database"
 });
 
 export function useAdminPage() {
@@ -135,7 +137,16 @@ export function useAdminPage() {
       secondaryCtaTarget: h.secondaryCtaTarget || "contact",
       resumeUrl: h.resumeUrl || "/resume.pdf",
       statsInput: Array.isArray(h.stats) ? h.stats.map((item: { value: string; label: string }) => `${item.value}|${item.label}`).join("\n") : "",
-      techMarqueeInput: Array.isArray(h.techMarquee) ? h.techMarquee.join(", ") : ""
+      techMarqueeInput: Array.isArray(h.techMarquee) ? h.techMarquee.join(", ") : "",
+      skillsInput:
+        Array.isArray(h.skills) && h.skills.length
+          ? h.skills
+              .map(
+                (item: { name: string; level?: number; category?: string; icon?: string }) =>
+                  `${item.name} | ${item.level ?? 80} | ${item.category || "main"} | ${item.icon || "code"}`
+              )
+              .join("\n")
+          : defaultHero().skillsInput
     });
     setAnalytics(m);
   };

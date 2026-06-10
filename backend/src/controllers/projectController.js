@@ -10,8 +10,15 @@ async function buildImageUrl(imageKeyOrUrl) {
   if (isHttpUrl(imageKeyOrUrl)) return imageKeyOrUrl;
   if (imageKeyOrUrl.startsWith("/")) return imageKeyOrUrl;
 
-  const signed = await generatePresignedDownloadUrl({ key: imageKeyOrUrl });
-  return signed.downloadUrl;
+  try {
+    const signed = await generatePresignedDownloadUrl({ key: imageKeyOrUrl });
+    return signed.downloadUrl;
+  } catch (error) {
+    console.warn(
+      `[projects] could not sign image "${imageKeyOrUrl}": ${error.message}`
+    );
+    return null;
+  }
 }
 
 function sortProjectsForDisplay(projects) {

@@ -1,8 +1,8 @@
 "use client";
 
+import { Search } from "lucide-react";
 import { NAV_ITEMS } from "../../constants";
 import { useAdmin } from "../../context/AdminContext";
-import { AdminInput } from "../ui/AdminInput";
 
 export function AdminHeader() {
   const { tab, headerSearch, setHeaderSearch, stalePendingQueries, unseenQueryCount } = useAdmin();
@@ -10,17 +10,17 @@ export function AdminHeader() {
   const notificationCount = stalePendingQueries.length + unseenQueryCount;
 
   return (
-    <header className="admin-glow-card rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center gap-4">
+    <header className="admin-glow-card admin-header-sticky rounded-2xl p-4 flex flex-col lg:flex-row lg:items-center gap-4 sticky top-0 lg:top-4 z-30">
       <h2 className="text-xl font-bold text-white shrink-0">{title}</h2>
 
-      <div className="flex-1 max-w-xl mx-auto w-full relative">
-        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">⌕</span>
-        <AdminInput
+      <div className="flex-1 max-w-xl mx-auto w-full relative admin-search">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-300/70 pointer-events-none" size={17} />
+        <input
           type="search"
           value={headerSearch}
           onChange={(e) => setHeaderSearch(e.target.value)}
-          placeholder="Search"
-          className="pl-9"
+          placeholder="Search anything..."
+          className="admin-search-input w-full pl-11 pr-4 py-2.5 rounded-xl text-sm text-slate-100 placeholder:text-slate-400 outline-none transition"
         />
       </div>
 

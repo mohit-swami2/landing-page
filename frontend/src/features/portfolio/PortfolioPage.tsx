@@ -18,7 +18,9 @@ import {
   Send,
   Twitter,
   Sparkles,
-  Phone
+  Phone,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { API_BASE } from "@/lib/api";
@@ -75,6 +77,8 @@ type HeroContent = {
 
 type ThemeKey = keyof typeof themes;
 
+type SkillItem = { name: string; level: number; icon: string; category: string };
+
 const defaultHeroContent: HeroContent = {
   availabilityText: "Available for new projects",
   headlineLine1: "Backend that scales.",
@@ -101,19 +105,49 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
   const [currentTheme, setCurrentTheme] = useState<ThemeKey>(resolvedInitialTheme);
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmittingQuery, setIsSubmittingQuery] = useState(false);
+  const [submitToast, setSubmitToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [heroContent, setHeroContent] = useState<HeroContent>(defaultHeroContent);
   const [socialLinks, setSocialLinks] = useState<{ platformName: string; icon: string; url: string }[]>([]);
   const [isResumeOpen, setIsResumeOpen] = useState(false);
   const [resumeLoadError, setResumeLoadError] = useState(false);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
+  const [skills, setSkills] = useState<SkillItem[]>([
+    { name: "Node.js", level: 95, icon: "server", category: "main" },
+    { name: "React", level: 90, icon: "code", category: "main" },
+    { name: "MongoDB", level: 88, icon: "database", category: "main" },
+    { name: "Express", level: 92, icon: "server", category: "main" },
+    { name: "Angular", level: 80, icon: "code", category: "main" },
+    { name: "AWS", level: 78, icon: "zap", category: "side" },
+    { name: "Cloudflare", level: 75, icon: "zap", category: "side" },
+    { name: "Docker", level: 82, icon: "database", category: "side" }
+  ]);
 
   const theme = themes[currentTheme];
 
   useEffect(() => {
     window.localStorage.setItem("lp_theme_key", currentTheme);
   }, [currentTheme]);
+
+  useEffect(() => {
+    const isModalOpen = selectedProject !== null || isResumeOpen;
+    const { body } = document;
+    if (isModalOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+      body.style.overflow = "hidden";
+      if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+    } else {
+      body.style.overflow = "";
+      body.style.paddingRight = "";
+    }
+    return () => {
+      body.style.overflow = "";
+      body.style.paddingRight = "";
+    };
+  }, [selectedProject, isResumeOpen]);
 
   useEffect(() => {
     let frame = 0;
@@ -128,6 +162,7 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
       const totalScroll = document.documentElement.scrollHeight - window.innerHeight;
       const currentScroll = window.scrollY;
       setScrollProgress((currentScroll / totalScroll) * 100);
+      setIsScrolled(currentScroll > 24);
     };
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("scroll", handleScroll);
@@ -205,7 +240,8 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           setProjects(data.length ? buildDisplayProjects(data) : [BIRLINGO_FALLBACK]);
         }
       })
-      .catch(() => null);
+      .catch(() => null)
+      .finally(() => setIsLoadingProjects(false));
     fetch(`${API_BASE}/hero/public`)
       .then((r) => r.json())
       .then((data) => {
@@ -223,6 +259,16 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           stats: Array.isArray(data.stats) && data.stats.length ? data.stats : defaultHeroContent.stats,
           techMarquee: Array.isArray(data.techMarquee) && data.techMarquee.length ? data.techMarquee : defaultHeroContent.techMarquee
         });
+        if (Array.isArray(data.skills) && data.skills.length) {
+          setSkills(
+            data.skills.map((s: Partial<SkillItem>) => ({
+              name: s.name || "",
+              level: typeof s.level === "number" ? s.level : 80,
+              icon: s.icon || "code",
+              category: s.category === "side" ? "side" : "main"
+            }))
+          );
+        }
       })
       .catch(() => null);
     fetch(`${API_BASE}/social-links/public`)
@@ -273,12 +319,19 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
         throw new Error("Failed to submit message");
       }
       setFormData({ name: "", email: "", message: "" });
+      setSubmitToast({ type: "success", text: "Message sent! I'll get back to you soon." });
     } catch {
-      // Keep inputs as-is so user can retry without retyping.
+      setSubmitToast({ type: "error", text: "Couldn't send your message. Please try again." });
     } finally {
       setIsSubmittingQuery(false);
     }
   };
+
+  useEffect(() => {
+    if (!submitToast) return;
+    const timer = setTimeout(() => setSubmitToast(null), 4000);
+    return () => clearTimeout(timer);
+  }, [submitToast]);
 
   const socialIconByName: Record<string, typeof Github> = {
     github: Github,
@@ -288,16 +341,12 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
     phone: Phone
   };
 
-  const skills = [
-    { name: "Node.js", icon: Server, category: "main" },
-    { name: "React", icon: Code2, category: "main" },
-    { name: "MongoDB", icon: Database, category: "main" },
-    { name: "Express", icon: Server, category: "main" },
-    { name: "Angular", icon: Code2, category: "main" },
-    { name: "AWS", icon: Zap, category: "side" },
-    { name: "Cloudflare", icon: Zap, category: "side" },
-    { name: "Docker", icon: Database, category: "side" }
-  ];
+  const skillIconByName: Record<string, typeof Server> = {
+    server: Server,
+    code: Code2,
+    database: Database,
+    zap: Zap
+  };
 
   const BIRLINGO_FALLBACK = {
     slug: "birlingo",
@@ -334,8 +383,34 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
         transition={{ type: "spring", damping: 40, stiffness: 150, mass: 0.5 }}
       />
 
-      <section className="relative z-10 min-h-screen w-full overflow-hidden">
-        <motion.nav initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
+      <motion.div
+        className="fixed top-0 left-0 z-[60] h-0.5"
+        style={{ width: `${scrollProgress}%`, background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}
+      />
+
+      <motion.header
+        initial={{ y: -80, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${isScrolled ? "px-3 pt-3 sm:px-6" : "px-0 pt-0"}`}
+      >
+        <nav
+          className={`mx-auto flex items-center justify-between transition-all duration-300 ${
+            isScrolled
+              ? "max-w-5xl rounded-2xl border px-5 py-3 shadow-2xl"
+              : "max-w-7xl border border-transparent px-6 py-6"
+          }`}
+          style={
+            isScrolled
+              ? {
+                  background: "rgba(15, 23, 42, 0.55)",
+                  backdropFilter: "blur(16px)",
+                  WebkitBackdropFilter: "blur(16px)",
+                  borderColor: `rgba(${theme.primary}, 0.35)`,
+                  boxShadow: `0 8px 32px rgba(${theme.primary}, 0.18)`
+                }
+              : undefined
+          }
+        >
           <motion.div whileHover={{ scale: 1.03 }} className="flex items-center gap-2 text-lg font-bold">
             <span className="grid h-9 w-9 place-items-center rounded-xl text-white shadow-lg" style={{ backgroundImage: `linear-gradient(135deg, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
               MS
@@ -359,14 +434,11 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
           >
             Resume
           </button>
-        </motion.nav>
+        </nav>
+      </motion.header>
 
-        <motion.div
-          className="absolute top-0 left-0 h-0.5"
-          style={{ width: `${scrollProgress}%`, background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}
-        />
-
-        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 pt-8 pb-24 lg:grid-cols-12 lg:gap-8 lg:pt-16">
+      <section className="relative z-10 min-h-screen w-full overflow-hidden">
+        <div className="relative z-10 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 pt-28 pb-24 lg:grid-cols-12 lg:gap-8 lg:pt-32">
           <div className="lg:col-span-7">
             <motion.div
               initial={{ opacity: 0, y: 12 }}
@@ -535,32 +607,150 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
         </div>
       </section>
 
-      <section id="about" className="py-20 px-6 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ duration: 0.8 }}>
-            <h2 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
-              About Me
-            </h2>
-            <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl p-8 border shadow-xl" style={{ borderColor: `rgba(${theme.primary}, 0.2)` }}>
-              <p className="text-slate-300 leading-relaxed mb-6">I&apos;m a Full Stack Developer with deep expertise in the MERN stack, specializing in building high-performance, scalable applications. My focus is on backend architecture and optimization, ensuring systems can handle massive user loads while maintaining reliability.</p>
-              <p className="text-slate-300 leading-relaxed">With extensive experience in Node.js, MongoDB, Express, and React, I&apos;ve architected solutions serving 100k+ users, integrated complex payment systems (Stripe, Paytm, Klarna), and contributed to the open-source ecosystem with NPM packages. I thrive on solving challenging technical problems and delivering production-ready code.</p>
+      <section id="about" className="py-20 px-6 relative z-10 overflow-hidden">
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute -top-10 -left-10 h-64 w-64 rounded-full blur-3xl opacity-30"
+          style={{ background: `radial-gradient(circle, rgba(${theme.primary},0.6), transparent 70%)` }}
+          animate={{ scale: [1, 1.15, 1], opacity: [0.25, 0.4, 0.25] }}
+          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div className="max-w-5xl mx-auto relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold mb-3 text-center bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}
+          >
+            About Me
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-center text-slate-400 mb-12"
+          >
+            Backend-focused full stack engineer who loves shipping reliable systems
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, type: "spring", stiffness: 120, damping: 18 }}
+            whileHover={{ y: -4 }}
+            className="group relative overflow-hidden rounded-3xl p-[1px] shadow-2xl"
+            style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.5), rgba(${theme.secondary}, 0.5), rgba(${theme.accent}, 0.3))` }}
+          >
+            <span
+              className="pointer-events-none absolute inset-0 -translate-x-full transition-transform duration-1000 ease-out group-hover:translate-x-full"
+              style={{ background: "linear-gradient(105deg, transparent 42%, rgba(255,255,255,0.10) 50%, transparent 58%)" }}
+              aria-hidden
+            />
+            <div className="relative rounded-[calc(1.5rem-1px)] bg-slate-900/80 backdrop-blur-md p-8 md:p-10">
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.15 }}
+                className="text-slate-300 leading-relaxed mb-6"
+              >
+                I&apos;m a Full Stack Developer with deep expertise in the MERN stack, specializing in building high-performance, scalable applications. My focus is on backend architecture and optimization, ensuring systems can handle massive user loads while maintaining reliability.
+              </motion.p>
+              <motion.p
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.25 }}
+                className="text-slate-300 leading-relaxed"
+              >
+                With extensive experience in Node.js, MongoDB, Express, and React, I&apos;ve architected solutions serving 100k+ users, integrated complex payment systems (Stripe, Paytm, Klarna), and contributed to the open-source ecosystem with NPM packages. I thrive on solving challenging technical problems and delivering production-ready code.
+              </motion.p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section id="skills" className="py-20 px-6 bg-slate-900/30 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
+      <section id="skills" className="py-20 px-6 bg-slate-900/30 relative z-10 overflow-hidden">
+        <div
+          className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-72 w-72 rounded-full blur-3xl opacity-40"
+          style={{ background: `radial-gradient(circle, rgba(${theme.primary},0.5), transparent 70%)` }}
+          aria-hidden
+        />
+        <div className="max-w-6xl mx-auto relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold mb-3 text-center bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}
+          >
             Technical Skills
-          </h2>
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-center text-slate-400 mb-12"
+          >
+            Tools and technologies I use to ship production systems
+          </motion.p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {skills.map((skill, index) => (
-              <motion.div key={skill.name} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1, type: "spring", stiffness: 300, damping: 20 }} whileHover={{ scale: 1.05, y: -5 }} className="p-6 rounded-xl backdrop-blur-sm border shadow-lg cursor-pointer transition-all duration-300" style={{ background: skill.category === "main" ? `rgba(${theme.primary}, 0.1)` : `rgba(${theme.secondary}, 0.1)`, borderColor: skill.category === "main" ? `rgba(${theme.primary}, 0.3)` : `rgba(${theme.secondary}, 0.3)` }}>
-                <skill.icon className="mb-4" style={{ color: skill.category === "main" ? `rgb(${theme.primary})` : `rgb(${theme.secondary})` }} size={32} />
-                <h3 className="text-slate-200 font-medium">{skill.name}</h3>
-              </motion.div>
-            ))}
+            {skills.map((skill, index) => {
+              const accent = skill.category === "main" ? theme.primary : theme.secondary;
+              const SkillIcon = skillIconByName[skill.icon] || Code2;
+              return (
+                <motion.div
+                  key={`${skill.name}-${index}`}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08, type: "spring", stiffness: 260, damping: 20 }}
+                  whileHover={{ y: -8 }}
+                  className="group relative overflow-hidden rounded-2xl border p-6 backdrop-blur-sm shadow-lg cursor-pointer"
+                  style={{
+                    background: `linear-gradient(160deg, rgba(${accent}, 0.12), rgba(${theme.accent}, 0.04))`,
+                    borderColor: `rgba(${accent}, 0.3)`
+                  }}
+                >
+                  <span
+                    className="pointer-events-none absolute inset-0 -translate-x-full transition-transform duration-700 ease-out group-hover:translate-x-full"
+                    style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.12) 50%, transparent 60%)" }}
+                    aria-hidden
+                  />
+                  <span
+                    className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    style={{ boxShadow: `0 0 30px rgba(${accent}, 0.35)` }}
+                    aria-hidden
+                  />
+                  <motion.div
+                    whileHover={{ rotate: [0, -8, 8, 0], scale: 1.12 }}
+                    transition={{ duration: 0.5 }}
+                    className="relative mb-4 inline-grid h-12 w-12 place-items-center rounded-xl"
+                    style={{ background: `rgba(${accent}, 0.15)`, border: `1px solid rgba(${accent}, 0.35)` }}
+                  >
+                    <SkillIcon style={{ color: `rgb(${accent})` }} size={26} />
+                  </motion.div>
+                  <h3 className="relative text-slate-100 font-semibold mb-3">{skill.name}</h3>
+                  <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-slate-700/40">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      whileInView={{ width: `${skill.level}%` }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.08 + 0.2, duration: 0.9, ease: "easeOut" }}
+                      className="h-full rounded-full"
+                      style={{ background: `linear-gradient(to right, rgb(${accent}), rgb(${theme.accent}))` }}
+                    />
+                  </div>
+                  <span className="relative mt-2 block text-right text-[11px] font-medium" style={{ color: `rgb(${accent})` }}>
+                    {skill.level}%
+                  </span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -571,12 +761,51 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
             Featured Projects
           </h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {projects.map((project, index) => (
-              <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.slug || project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
+            {isLoadingProjects
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={`project-skeleton-${index}`}
+                    className="relative bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl"
+                    style={{
+                      background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`,
+                      borderColor: `rgba(${theme.primary}, 0.2)`,
+                      boxShadow: `0 10px 40px rgba(${theme.primary}, 0.12)`
+                    }}
+                  >
+                    <div className="relative z-10 animate-pulse">
+                      <div className="h-48 bg-slate-700/40 relative overflow-hidden">
+                        <div
+                          className="absolute inset-0"
+                          style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.12), rgba(${theme.secondary}, 0.12))` }}
+                        />
+                      </div>
+                      <div className="p-6">
+                        <div className="h-6 w-2/3 rounded-md bg-slate-700/50 mb-4" />
+                        <div className="space-y-2 mb-5">
+                          <div className="h-3 w-full rounded bg-slate-700/40" />
+                          <div className="h-3 w-11/12 rounded bg-slate-700/40" />
+                          <div className="h-3 w-3/4 rounded bg-slate-700/40" />
+                        </div>
+                        <div className="flex flex-wrap gap-2 mb-5">
+                          {Array.from({ length: 4 }).map((__, badgeIndex) => (
+                            <div
+                              key={`skeleton-badge-${index}-${badgeIndex}`}
+                              className="h-6 rounded-full"
+                              style={{ width: `${48 + badgeIndex * 14}px`, background: `rgba(${theme.primary}, 0.18)` }}
+                            />
+                          ))}
+                        </div>
+                        <div className="h-4 w-28 rounded bg-slate-700/50" />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              : projects.map((project, index) => (
+              <motion.div onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} key={project.slug || project.title} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: Math.min(index, 5) * 0.12, type: "spring", stiffness: 200, damping: 20 }} whileHover={{ y: -10 }} className="relative flex h-full flex-col bg-slate-900/50 backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all duration-500 group" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.1) 0%, rgba(${theme.secondary}, 0.1) 50%, rgba(${theme.primary}, 0.1) 100%)`, borderColor: `rgba(${theme.primary}, 0.2)`, boxShadow: `0 10px 40px rgba(${theme.primary}, 0.2)` }}>
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
                   <div className="absolute inset-0 animate-[spin_8s_linear_infinite]" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.2), rgba(${theme.secondary}, 0.2), rgba(${theme.accent}, 0.2))`, cursor: 'pointer' }} />
                 </div>
-                <div style={{ cursor: 'pointer' }} className="relative z-10">
+                <div style={{ cursor: 'pointer' }} className="relative z-10 flex flex-1 flex-col">
                   <div className="h-48 overflow-hidden flex gap-0.5 bg-slate-700/30">
                     {project.images && project.images.length > 0 ? (
                       <div className="flex-1 h-full overflow-hidden relative">
@@ -588,17 +817,20 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
                       </div>
                     )}
                   </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-slate-200 mb-2">{project.title}</h3>
-                    <p className="text-slate-400 mb-4 text-sm">{project.briefDescription}</p>
+                  <div className="p-6 flex flex-1 flex-col">
+                    <h3 className="text-xl font-bold text-slate-200 mb-2 line-clamp-1">{project.title}</h3>
+                    <p className="text-slate-400 mb-4 text-sm line-clamp-3">{project.briefDescription}</p>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {project.tech.map((tech) => (
+                      {project.tech.slice(0, 6).map((tech) => (
                         <span key={tech} className="px-3 py-1 rounded-full text-xs border" style={{ background: `rgba(${theme.primary}, 0.2)`, color: `rgb(${theme.primary})`, borderColor: `rgba(${theme.primary}, 0.3)` }}>
                           {tech}
                         </span>
                       ))}
+                      {project.tech.length > 6 ? (
+                        <span className="px-3 py-1 rounded-full text-xs text-slate-400">+{project.tech.length - 6}</span>
+                      ) : null}
                     </div>
-                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }} onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} className="flex items-center gap-2 transition-colors" style={{ color: `rgb(${theme.secondary})` }}>
+                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} transition={{ type: "spring", stiffness: 400, damping: 17 }} onClick={() => { setSelectedProject(index); setCurrentImageIndex(0); }} className="mt-auto flex items-center gap-2 transition-colors" style={{ color: `rgb(${theme.secondary})` }}>
                       <span style={{ cursor: 'pointer' }}>View Project</span>
                       <ExternalLink size={16} />
                     </motion.button>
@@ -610,16 +842,60 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
         </div>
       </section>
 
-      <section className="py-20 px-6 bg-slate-900/30 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-4xl font-bold mb-12 text-center bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}>
+      <section className="py-20 px-6 bg-slate-900/30 relative z-10 overflow-hidden">
+        <div
+          className="pointer-events-none absolute -bottom-24 right-1/4 h-72 w-72 rounded-full blur-3xl opacity-30"
+          style={{ background: `radial-gradient(circle, rgba(${theme.secondary},0.5), transparent 70%)` }}
+          aria-hidden
+        />
+        <div className="max-w-4xl mx-auto relative">
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-4xl font-bold mb-12 text-center bg-clip-text text-transparent"
+            style={{ backgroundImage: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.secondary}))` }}
+          >
             Key Achievements
-          </h2>
+          </motion.h2>
           <div className="grid md:grid-cols-3 gap-6">
             {achievements.map((achievement, index) => (
-              <motion.div key={index} initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.2, type: "spring", stiffness: 300, damping: 20 }} whileHover={{ scale: 1.05 }} className="p-6 backdrop-blur-sm rounded-xl border shadow-lg" style={{ background: `linear-gradient(135deg, rgba(${theme.primary}, 0.15), rgba(${theme.secondary}, 0.15))`, borderColor: `rgba(${theme.primary}, 0.3)` }}>
-                <achievement.icon className="mb-4" style={{ color: `rgb(${theme.secondary})` }} size={32} />
-                <p className="text-slate-300 text-sm">{achievement.text}</p>
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: Math.min(index, 6) * 0.12, type: "spring", stiffness: 260, damping: 20 }}
+                whileHover={{ y: -8 }}
+                className="group relative flex h-full flex-col overflow-hidden rounded-2xl border p-6 backdrop-blur-sm shadow-lg"
+                style={{
+                  background: `linear-gradient(135deg, rgba(${theme.primary}, 0.15), rgba(${theme.secondary}, 0.12))`,
+                  borderColor: `rgba(${theme.primary}, 0.3)`
+                }}
+              >
+                <span
+                  className="pointer-events-none absolute inset-x-0 top-0 h-1 origin-left scale-x-0 transition-transform duration-500 group-hover:scale-x-100"
+                  style={{ background: `linear-gradient(to right, rgb(${theme.primary}), rgb(${theme.accent}))` }}
+                  aria-hidden
+                />
+                <span
+                  className="pointer-events-none absolute -inset-px rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{ boxShadow: `0 0 34px rgba(${theme.secondary}, 0.3)` }}
+                  aria-hidden
+                />
+                <motion.div
+                  animate={{ y: [0, -6, 0] }}
+                  transition={{ duration: 3 + index * 0.4, repeat: Infinity, ease: "easeInOut" }}
+                  className="relative mb-4 inline-grid h-14 w-14 place-items-center rounded-2xl"
+                  style={{
+                    background: `rgba(${theme.secondary}, 0.15)`,
+                    border: `1px solid rgba(${theme.secondary}, 0.4)`,
+                    boxShadow: `0 0 20px rgba(${theme.secondary}, 0.25)`
+                  }}
+                >
+                  <achievement.icon style={{ color: `rgb(${theme.secondary})` }} size={28} />
+                </motion.div>
+                <p className="relative text-slate-200 text-sm leading-relaxed">{achievement.text}</p>
               </motion.div>
             ))}
           </div>
@@ -721,6 +997,61 @@ export function PortfolioPage({ initialThemeKey = "purpleCyan" }: { initialTheme
       </section>
 
       <AnimatePresence>
+        {submitToast && (
+          <motion.div
+            key="submit-toast"
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            className="fixed bottom-6 right-6 z-[70] max-w-sm"
+          >
+            <div
+              className="flex items-start gap-3 rounded-2xl border px-5 py-4 shadow-2xl backdrop-blur-xl"
+              style={
+                submitToast.type === "success"
+                  ? {
+                      background: `linear-gradient(135deg, rgba(${theme.primary}, 0.22), rgba(${theme.secondary}, 0.18))`,
+                      borderColor: `rgba(${theme.primary}, 0.55)`,
+                      boxShadow: `0 12px 40px rgba(${theme.primary}, 0.35)`
+                    }
+                  : {
+                      background: "rgba(127, 29, 29, 0.35)",
+                      borderColor: "rgba(248, 113, 113, 0.5)",
+                      boxShadow: "0 12px 40px rgba(239, 68, 68, 0.3)"
+                    }
+              }
+            >
+              <span
+                className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full"
+                style={
+                  submitToast.type === "success"
+                    ? { backgroundImage: `linear-gradient(135deg, rgb(${theme.primary}), rgb(${theme.secondary}))` }
+                    : { background: "rgb(239, 68, 68)" }
+                }
+              >
+                {submitToast.type === "success" ? (
+                  <CheckCircle2 size={16} className="text-white" />
+                ) : (
+                  <AlertCircle size={16} className="text-white" />
+                )}
+              </span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-white">
+                  {submitToast.type === "success" ? "Thank you!" : "Oops!"}
+                </p>
+                <p className="text-xs text-slate-200/90">{submitToast.text}</p>
+              </div>
+              <button
+                onClick={() => setSubmitToast(null)}
+                className="text-slate-300 transition-colors hover:text-white"
+                aria-label="Dismiss notification"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
         {isResumeOpen && (
           <motion.div
             initial={{ opacity: 0 }}

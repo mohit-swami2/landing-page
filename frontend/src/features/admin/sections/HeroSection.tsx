@@ -76,6 +76,21 @@ export function HeroSection() {
         value={hero.techMarqueeInput}
         onChange={(e) => setHero({ ...hero, techMarqueeInput: e.target.value })}
       />
+      <div className="space-y-1">
+        <p className="text-xs text-slate-400">
+          Technical Skills — one per line:{" "}
+          <span className="text-cyan-300">name | percent | category | icon</span>
+        </p>
+        <p className="text-[11px] text-slate-500">
+          category = main or side · icon = server, code, database, or zap (e.g. <span className="text-slate-300">Node.js | 95 | main | server</span>)
+        </p>
+        <AdminTextarea
+          rows={8}
+          placeholder={"Node.js | 95 | main | server\nReact | 90 | main | code"}
+          value={hero.skillsInput}
+          onChange={(e) => setHero({ ...hero, skillsInput: e.target.value })}
+        />
+      </div>
       <AdminButton
         disabled={isPending("hero.save")}
         onClick={() =>
@@ -94,6 +109,22 @@ export function HeroSection() {
                 .split(",")
                 .map((item) => item.trim())
                 .filter(Boolean);
+              const allowedIcons = ["server", "code", "database", "zap"];
+              const skills = hero.skillsInput
+                .split("\n")
+                .map((line) => line.trim())
+                .filter(Boolean)
+                .map((line) => {
+                  const [name, level, category, icon] = line.split("|").map((part) => part.trim());
+                  const parsedLevel = Number(level);
+                  return {
+                    name: name || "",
+                    level: Number.isFinite(parsedLevel) ? Math.min(100, Math.max(0, parsedLevel)) : 80,
+                    category: category === "side" ? "side" : "main",
+                    icon: allowedIcons.includes((icon || "").toLowerCase()) ? icon.toLowerCase() : "code"
+                  };
+                })
+                .filter((skill) => skill.name);
               await apiFetch(
                 "/hero",
                 {
@@ -109,7 +140,8 @@ export function HeroSection() {
                     secondaryCtaTarget: hero.secondaryCtaTarget,
                     resumeUrl: hero.resumeUrl,
                     stats,
-                    techMarquee
+                    techMarquee,
+                    skills
                   })
                 },
                 token

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { apiFetch } from "@/lib/api";
 import { useAdmin } from "../context/AdminContext";
 import { AdminBadge } from "../components/ui/AdminBadge";
@@ -185,7 +187,7 @@ export function ProjectsSection() {
             No projects match your filters.
           </p>
         ) : (
-          <div className="space-y-3 max-h-[calc(100vh-14rem)] overflow-y-auto admin-scrollbar pr-1">
+          <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4 max-h-[calc(100vh-12rem)] overflow-y-auto admin-scrollbar pr-1">
             {filteredProjects.map((p) => (
               <ProjectListItem
                 key={p._id}
@@ -231,20 +233,69 @@ function ProjectListItem({
   resetProjectForm: () => void;
   toast: (type: "success" | "error", text: string) => void;
 }) {
+  const images = Array.isArray(p.images) ? p.images.filter(Boolean) : [];
+  const [imgIndex, setImgIndex] = useState(0);
+  const safeIndex = images.length ? imgIndex % images.length : 0;
+  const showPrev = () => setImgIndex((i) => (i === 0 ? images.length - 1 : i - 1));
+  const showNext = () => setImgIndex((i) => (i === images.length - 1 ? 0 : i + 1));
+
   return (
     <article
-      className={`rounded-2xl border overflow-hidden transition ${
+      className={`rounded-2xl border overflow-hidden transition flex flex-col ${
         editingProjectId === p._id
           ? "border-cyan-400/60 admin-glow-card-strong"
           : "admin-glow-card hover:border-cyan-400/30"
       }`}
     >
-      <div className="flex flex-col sm:flex-row gap-0 sm:gap-4">
-        <div className="sm:w-36 h-32 sm:h-auto flex-shrink-0 bg-[#0a1220]">
-          {p.images && p.images[0] ? (
-            <img src={projectImageSrc(p.images[0])} alt={p.name} className="w-full h-full object-cover min-h-[8rem]" />
+      <div className="flex flex-col gap-0">
+        <div className="relative h-44 w-full shrink-0 bg-[#0a1220] group/carousel overflow-hidden">
+          {images.length > 0 ? (
+            <>
+              <img
+                key={safeIndex}
+                src={projectImageSrc(images[safeIndex])}
+                alt={`${p.name} screenshot ${safeIndex + 1}`}
+                className="w-full h-full object-cover"
+              />
+              {images.length > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={showPrev}
+                    aria-label="Previous image"
+                    className="absolute left-2 top-1/2 -translate-y-1/2 h-8 w-8 grid place-items-center rounded-full bg-slate-950/70 text-white border border-cyan-400/30 opacity-0 group-hover/carousel:opacity-100 hover:bg-slate-900 transition"
+                  >
+                    <ChevronLeft size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={showNext}
+                    aria-label="Next image"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 grid place-items-center rounded-full bg-slate-950/70 text-white border border-cyan-400/30 opacity-0 group-hover/carousel:opacity-100 hover:bg-slate-900 transition"
+                  >
+                    <ChevronRight size={16} />
+                  </button>
+                  <span className="absolute top-2 right-2 text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-950/70 text-cyan-100 border border-cyan-400/25">
+                    {safeIndex + 1}/{images.length}
+                  </span>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                    {images.map((_, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        aria-label={`Go to image ${idx + 1}`}
+                        onClick={() => setImgIndex(idx)}
+                        className={`h-1.5 rounded-full transition-all ${
+                          idx === safeIndex ? "w-5 bg-cyan-400" : "w-1.5 bg-slate-500 hover:bg-slate-300"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </>
           ) : (
-            <div className="w-full h-full min-h-[8rem] flex items-center justify-center text-slate-500 text-xs">No image</div>
+            <div className="w-full h-full flex items-center justify-center text-slate-500 text-xs">No image</div>
           )}
         </div>
         <div className="flex-1 p-4 flex flex-col gap-2 min-w-0">
